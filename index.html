@@ -6,13 +6,14 @@
     <title>Agasthyaarkoodam Trek Portal</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f4f7f6; }
+        body { background-color: #f4f7f6; padding-bottom: 50px; }
         .card { border-radius: 15px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .stats-box { background: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 10px; padding: 15px; margin-bottom: 20px; }
         .nav-pills .nav-link.active { background-color: #2e7d32; }
         .absentee-row { background: #fff; padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid #ffc107; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .report-table { font-size: 0.85rem; }
         label { font-size: 0.8rem; font-weight: bold; color: #555; }
+        .table-responsive { max-height: 400px; overflow-y: auto; }
     </style>
 </head>
 <body>
@@ -86,17 +87,20 @@
 
         <div class="tab-pane fade" id="reportSection">
             <div class="card p-3">
+                <label class="mb-1">Select Range for Summary</label>
                 <div class="row g-1 mb-3">
                     <div class="col-5"><input type="date" id="fromDate" class="form-control form-control-sm"></div>
                     <div class="col-5"><input type="date" id="toDate" class="form-control form-control-sm"></div>
                     <div class="col-2"><button class="btn btn-primary btn-sm w-100" onclick="filterReport()">GO</button></div>
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-sm report-table">
+                    <table class="table table-sm report-table table-striped">
                         <thead class="table-dark">
                             <tr><th>Date</th><th>Reg</th><th>Attd</th><th>M/W/O</th></tr>
                         </thead>
-                        <tbody id="reportData"></tbody>
+                        <tbody id="reportData">
+                            <tr><td colspan="4" class="text-center text-muted">Click "Reports" to load data</td></tr>
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -106,10 +110,11 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    // 1. REPLACE THIS URL WITH YOUR DEPLOYED WEB APP URL
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxk-TvK-NHMAXSCPqB4_YlUbqFQy7I8l9yxwQ0jH3Sjj4TKQIdDeXGUOyDhFIHhenxP9w/exec"; 
     let allData = [];
 
-    // Live Calculation Logic
+    // --- FORM CALCULATIONS ---
     document.querySelectorAll('.calc').forEach(el => {
         el.addEventListener('input', () => {
             const onR = parseInt(document.getElementById('onReg').value) || 0;
@@ -140,7 +145,7 @@
         });
     });
 
-    // Submit Logic
+    // --- SUBMIT TO GOOGLE SHEET ---
     document.getElementById('trekForm').onsubmit = async (e) => {
         e.preventDefault();
         const btn = document.getElementById('submitBtn');
@@ -166,37 +171,62 @@
 
         try {
             await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-            alert("Success! Sheet Updated.");
+            alert("Data Submitted Successfully!");
             location.reload();
         } catch (e) { alert("Error: " + e); btn.disabled = false; }
     };
 
-    // Report Logic
+    // --- REPORT LOGIC ---
     async function fetchReports() {
         const tbody = document.getElementById('reportData');
         tbody.innerHTML = '<tr><td colspan="4" class="text-center">Loading...</td></tr>';
         try {
             const res = await fetch(WEB_APP_URL);
-            allData = await res.json();
+            const rawData = await res.json();
+            // Sort data by date (most recent first)
+            allData = rawData.sort((a, b) => new Date(b.Date) - new Date(a.Date));
             renderTable(allData);
-        } catch (e) { tbody.innerHTML = '<tr><td colspan="4">Error loading data</td></tr>'; }
+        } catch (e) { tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error loading data. Check Web App URL.</td></tr>'; }
     }
 
     function renderTable(data) {
         const tbody = document.getElementById('reportData');
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center">No records found for this range.</td></tr>';
+            return;
+        }
         tbody.innerHTML = data.map(row => {
-            const d = new Date(row.Date).toLocaleDateString('en-GB');
-            return `<tr><td>${d}</td><td>${row['Total Reg']}</td><td>${row['Total Turnout']}</td><td>${row.Men}/${row.Women}/${row.Other}</td></tr>`;
+            const d = new Date(row.Date).toLocaleDateString('en-GB'); // Format: DD/MM/YYYY
+            return `<tr>
+                <td>${d}</td>
+                <td>${row['Total Reg'] || 0}</td>
+                <td>${row['Total Turnout'] || 0}</td>
+                <td>${row.Men || 0}/${row.Women || 0}/${row.Other || 0}</td>
+            </tr>`;
         }).join('');
     }
 
     function filterReport() {
-        const start = new Date(document.getElementById('fromDate').value);
-        const end = new Date(document.getElementById('toDate').value);
+        const fromInput = document.getElementById('fromDate').value;
+        const toInput = document.getElementById('toDate').value;
+
+        if (!fromInput || !toInput) {
+            alert("Please select both From and To dates.");
+            return;
+        }
+
+        // Set hours to midnight to compare only the date part
+        const start = new Date(fromInput);
+        start.setHours(0,0,0,0);
+        
+        const end = new Date(toInput);
+        end.setHours(23,59,59,999);
+
         const filtered = allData.filter(row => {
-            const d = new Date(row.Date);
-            return d >= start && d <= end;
+            const rowDate = new Date(row.Date);
+            return rowDate >= start && rowDate <= end;
         });
+
         renderTable(filtered);
     }
 </script>
