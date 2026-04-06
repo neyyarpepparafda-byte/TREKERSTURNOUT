@@ -31,7 +31,7 @@
         <div class="tab-pane fade show active" id="entryForm">
             <div class="card p-3">
                 <div id="dateWarning" class="alert alert-danger mb-3 fw-bold text-center">
-                    ⚠️ ALERT: Data for this date already exists! Submitting will UPDATE the current record.
+                    ⚠️ ALERT: Data for this date already exists! Submitting will UPDATE the record.
                 </div>
 
                 <div class="stats-box row text-center g-0 mb-3">
@@ -45,26 +45,21 @@
                         <label>Trek Date</label>
                         <input type="date" id="date" class="form-control" required onchange="checkExistingDate()">
                     </div>
-
                     <div class="row g-2 mb-3">
                         <div class="col-6"><label>Online Reg</label><input type="number" id="onReg" class="form-control calc" value="0" min="0"></div>
                         <div class="col-6"><label>Offline Reg</label><input type="number" id="offReg" class="form-control calc" value="0" min="0"></div>
                     </div>
-
                     <div class="row g-2 mb-3">
                         <div class="col-6"><label>Online Attended</label><input type="number" id="onTurn" class="form-control calc" value="0" min="0"></div>
                         <div class="col-6"><label>Offline Attended</label><input type="number" id="offTurn" class="form-control calc" value="0" min="0"></div>
                     </div>
-
                     <div class="row g-2 mb-1">
                         <div class="col-4"><label>Men</label><input type="number" id="men" class="form-control gender-calc" value="0" min="0"></div>
                         <div class="col-4"><label>Women</label><input type="number" id="women" class="form-control gender-calc" value="0" min="0"></div>
                         <div class="col-4"><label>Other</label><input type="number" id="other" class="form-control gender-calc" value="0" min="0"></div>
                     </div>
-                    <p id="genderError" class="text-danger small fw-bold mb-3" style="display:none;">⚠️ Total Men+Women+Other must equal Total Attended!</p>
-
+                    <p id="genderError" class="text-danger small fw-bold mb-3" style="display:none;">⚠️ Gender total must equal Total Attended!</p>
                     <div id="absenteeSection"></div>
-
                     <button type="submit" id="submitBtn" class="btn btn-success w-100 mt-2 py-2 fw-bold">SUBMIT DATA</button>
                 </form>
             </div>
@@ -91,11 +86,9 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // --- REPLACE THIS WITH YOUR WEB APP URL ---
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyrBqODedDq6kYi-A4uXVxv876sXu-MDO3i7txPb3iWngQ1A7dIFx2Xydf42nX8CEHSJg/exec"; 
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwM8gYED124Gic4W7FUZHAT1ZEorQegaz4P7wH1gGoqeI8yO3PZlxhu6e0C8piv784S9w/exec"; 
     let allData = [];
 
-    // DUPLICATE DATE CHECK
     function checkExistingDate() {
         const selected = document.getElementById('date').value;
         const exists = allData.some(row => {
@@ -106,23 +99,19 @@
         document.getElementById('dateWarning').style.display = exists ? 'block' : 'none';
     }
 
-    // CALCULATION & VALIDATION
     document.querySelectorAll('.calc, .gender-calc').forEach(el => {
         el.addEventListener('input', () => {
             const onR = parseInt(document.getElementById('onReg').value) || 0;
             const offR = parseInt(document.getElementById('offReg').value) || 0;
             const onT = parseInt(document.getElementById('onTurn').value) || 0;
             const offT = parseInt(document.getElementById('offTurn').value) || 0;
-            
             const tReg = onR + offR;
             const tTurn = onT + offT;
             const abs = tReg - tTurn;
-
             document.getElementById('dispTotalReg').innerText = tReg;
             document.getElementById('dispTotalTurn').innerText = tTurn;
             document.getElementById('dispAbs').innerText = abs > 0 ? abs : 0;
 
-            // Gender Math Check
             const m = parseInt(document.getElementById('men').value) || 0;
             const w = parseInt(document.getElementById('women').value) || 0;
             const o = parseInt(document.getElementById('other').value) || 0;
@@ -135,7 +124,6 @@
                 document.querySelectorAll('.gender-calc').forEach(x => x.classList.remove('is-invalid'));
             }
 
-            // Generate Absentee Inputs
             if (el.classList.contains('calc')) {
                 const container = document.getElementById('absenteeSection');
                 container.innerHTML = '';
@@ -149,20 +137,18 @@
         });
     });
 
-    // SUBMIT DATA
     document.getElementById('trekForm').onsubmit = async (e) => {
         e.preventDefault();
-        
         const tTurn = parseInt(document.getElementById('dispTotalTurn').innerText);
         const gTotal = (parseInt(document.getElementById('men').value) || 0) + (parseInt(document.getElementById('women').value) || 0) + (parseInt(document.getElementById('other').value) || 0);
         
         if (gTotal !== tTurn) {
-            alert("STOP: Men + Women + Other must equal Total Attended!");
+            alert("Error: Men + Women + Other must equal Total Attended!");
             return;
         }
 
         const btn = document.getElementById('submitBtn');
-        btn.disabled = true; btn.innerText = "Saving to Sheet...";
+        btn.disabled = true; btn.innerText = "Saving...";
 
         const payload = {
             date: document.getElementById('date').value,
@@ -180,12 +166,23 @@
 
         try {
             await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-            alert("Record Updated Successfully!");
-            location.reload();
-        } catch (e) { alert("Error connecting to Google."); btn.disabled = false; }
+            alert("Record Submitted Successfully!");
+            
+            // --- RESET LOGIC START ---
+            document.getElementById('trekForm').reset();
+            document.getElementById('dispTotalReg').innerText = "0";
+            document.getElementById('dispTotalTurn').innerText = "0";
+            document.getElementById('dispAbs').innerText = "0";
+            document.getElementById('absenteeSection').innerHTML = "";
+            document.getElementById('dateWarning').style.display = "none";
+            // Refresh local data for future duplicate checks
+            fetchReports(true);
+            // --- RESET LOGIC END ---
+
+            btn.disabled = false; btn.innerText = "SUBMIT DATA";
+        } catch (e) { alert("Submission Failed."); btn.disabled = false; btn.innerText = "SUBMIT DATA"; }
     };
 
-    // FETCH REPORT
     async function fetchReports(silent = false) {
         try {
             const res = await fetch(WEB_APP_URL);
@@ -195,19 +192,16 @@
         } catch (e) { console.error(e); }
     }
 
-    // TABLE RENDER
     function renderTable(data) {
         const tbody = document.getElementById('reportData');
         const tfoot = document.getElementById('reportFooter');
         let sR = 0, sT = 0, sM = 0, sW = 0, sO = 0;
-        
         tbody.innerHTML = data.map(row => {
             const r = parseInt(row['Total Reg'])||0; const t = parseInt(row['Total Turnout'])||0;
             const m = parseInt(row.Men)||0; const w = parseInt(row.Women)||0; const o = parseInt(row.Other)||0;
             sR+=r; sT+=t; sM+=m; sW+=w; sO+=o;
             return `<tr><td>${new Date(row.Date).toLocaleDateString('en-GB')}</td><td>${r}</td><td>${t}</td><td>${m}/${w}/${o}</td></tr>`;
         }).join('');
-        
         tfoot.innerHTML = `<tr class="summary-row"><td>TOTAL</td><td>${sR}</td><td>${sT}</td><td>${sM}/${sW}/${sO}</td></tr>`;
     }
 
@@ -218,7 +212,6 @@
         renderTable(filtered);
     }
 
-    // Load data on page open so we can detect duplicates immediately
     window.onload = () => fetchReports(true);
 </script>
 </body>
