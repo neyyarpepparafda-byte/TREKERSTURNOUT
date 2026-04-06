@@ -12,9 +12,9 @@
         .nav-pills .nav-link.active { background-color: #2e7d32; }
         .absentee-row { background: #fff; padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid #ffc107; }
         .summary-row { background-color: #343a40 !important; color: white; font-weight: bold; }
-        #dateWarning { display: none; font-size: 0.85rem; padding: 10px; border-radius: 8px; border: 1px solid #ffc107; }
+        #dateWarning { display: none; }
+        .is-invalid { border: 2px solid #dc3545 !important; }
         label { font-size: 0.8rem; font-weight: bold; color: #555; }
-        .table-responsive { max-height: 500px; overflow-y: auto; }
     </style>
 </head>
 <body>
@@ -30,8 +30,8 @@
     <div class="tab-content">
         <div class="tab-pane fade show active" id="entryForm">
             <div class="card p-3">
-                <div id="dateWarning" class="alert alert-warning mb-3 fw-bold text-center">
-                    ⚠️ Entry for this date already exists. Submitting will OVERWRITE old data.
+                <div id="dateWarning" class="alert alert-danger mb-3 fw-bold text-center">
+                    ⚠️ ALERT: Data for this date already exists! Submitting will UPDATE the current record.
                 </div>
 
                 <div class="stats-box row text-center g-0 mb-3">
@@ -47,43 +47,31 @@
                     </div>
 
                     <div class="row g-2 mb-3">
-                        <div class="col-6">
-                            <label>Online Reg</label>
-                            <input type="number" id="onReg" class="form-control calc" value="0">
-                        </div>
-                        <div class="col-6">
-                            <label>Offline Reg</label>
-                            <input type="number" id="offReg" class="form-control calc" value="0">
-                        </div>
+                        <div class="col-6"><label>Online Reg</label><input type="number" id="onReg" class="form-control calc" value="0" min="0"></div>
+                        <div class="col-6"><label>Offline Reg</label><input type="number" id="offReg" class="form-control calc" value="0" min="0"></div>
                     </div>
 
                     <div class="row g-2 mb-3">
-                        <div class="col-6">
-                            <label>Online Attended</label>
-                            <input type="number" id="onTurn" class="form-control calc" value="0">
-                        </div>
-                        <div class="col-6">
-                            <label>Offline Attended</label>
-                            <input type="number" id="offTurn" class="form-control calc" value="0">
-                        </div>
+                        <div class="col-6"><label>Online Attended</label><input type="number" id="onTurn" class="form-control calc" value="0" min="0"></div>
+                        <div class="col-6"><label>Offline Attended</label><input type="number" id="offTurn" class="form-control calc" value="0" min="0"></div>
                     </div>
 
-                    <div class="row g-2 mb-3">
-                        <div class="col-4"><label>Men</label><input type="number" id="men" class="form-control" value="0"></div>
-                        <div class="col-4"><label>Women</label><input type="number" id="women" class="form-control" value="0"></div>
-                        <div class="col-4"><label>Other</label><input type="number" id="other" class="form-control" value="0"></div>
+                    <div class="row g-2 mb-1">
+                        <div class="col-4"><label>Men</label><input type="number" id="men" class="form-control gender-calc" value="0" min="0"></div>
+                        <div class="col-4"><label>Women</label><input type="number" id="women" class="form-control gender-calc" value="0" min="0"></div>
+                        <div class="col-4"><label>Other</label><input type="number" id="other" class="form-control gender-calc" value="0" min="0"></div>
                     </div>
+                    <p id="genderError" class="text-danger small fw-bold mb-3" style="display:none;">⚠️ Total Men+Women+Other must equal Total Attended!</p>
 
                     <div id="absenteeSection"></div>
 
-                    <button type="submit" id="submitBtn" class="btn btn-success w-100 mt-3 py-2 fw-bold">SUBMIT DATA</button>
+                    <button type="submit" id="submitBtn" class="btn btn-success w-100 mt-2 py-2 fw-bold">SUBMIT DATA</button>
                 </form>
             </div>
         </div>
 
         <div class="tab-pane fade" id="reportSection">
             <div class="card p-3">
-                <label class="mb-1 text-primary text-uppercase">Period Summary</label>
                 <div class="row g-1 mb-3">
                     <div class="col-5"><input type="date" id="fromDate" class="form-control form-control-sm"></div>
                     <div class="col-5"><input type="date" id="toDate" class="form-control form-control-sm"></div>
@@ -91,9 +79,7 @@
                 </div>
                 <div class="table-responsive">
                     <table class="table table-sm report-table table-bordered">
-                        <thead class="table-dark">
-                            <tr><th>Date</th><th>Reg</th><th>Attd</th><th>M/W/O</th></tr>
-                        </thead>
+                        <thead class="table-dark"><tr><th>Date</th><th>Reg</th><th>Attd</th><th>M/W/O</th></tr></thead>
                         <tbody id="reportData"></tbody>
                         <tfoot id="reportFooter"></tfoot>
                     </table>
@@ -105,30 +91,29 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // --- CONFIGURE YOUR URL HERE ---
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzEX1x_jKfqR3kxVmwoVaO1ipu7NETNKR62xixu_6u2RgyY7h4WA1iH9wTdXkkxw1tgow/exec"; 
+    // --- REPLACE THIS WITH YOUR WEB APP URL ---
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyrBqODedDq6kYi-A4uXVxv876sXu-MDO3i7txPb3iWngQ1A7dIFx2Xydf42nX8CEHSJg/exec"; 
     let allData = [];
 
-    // DUPLICATE CHECK: Warn if date exists
+    // DUPLICATE DATE CHECK
     function checkExistingDate() {
         const selected = document.getElementById('date').value;
-        const warning = document.getElementById('dateWarning');
-        
         const exists = allData.some(row => {
+            if (!row.Date) return false;
             const d = new Date(row.Date).toISOString().split('T')[0];
             return d === selected;
         });
-        warning.style.display = exists ? 'block' : 'none';
+        document.getElementById('dateWarning').style.display = exists ? 'block' : 'none';
     }
 
-    // LIVE CALCULATIONS
-    document.querySelectorAll('.calc').forEach(el => {
+    // CALCULATION & VALIDATION
+    document.querySelectorAll('.calc, .gender-calc').forEach(el => {
         el.addEventListener('input', () => {
             const onR = parseInt(document.getElementById('onReg').value) || 0;
             const offR = parseInt(document.getElementById('offReg').value) || 0;
             const onT = parseInt(document.getElementById('onTurn').value) || 0;
             const offT = parseInt(document.getElementById('offTurn').value) || 0;
-
+            
             const tReg = onR + offR;
             const tTurn = onT + offT;
             const abs = tReg - tTurn;
@@ -137,115 +122,103 @@
             document.getElementById('dispTotalTurn').innerText = tTurn;
             document.getElementById('dispAbs').innerText = abs > 0 ? abs : 0;
 
-            const container = document.getElementById('absenteeSection');
-            container.innerHTML = '';
-            if (abs > 0) {
-                container.innerHTML = `<label class="text-danger mt-2">Absentee Details (Optional)</label>`;
-                for (let i = 0; i < abs; i++) {
-                    container.innerHTML += `
-                        <div class="absentee-row row g-1">
-                            <div class="col-7"><input type="text" class="form-control form-control-sm name-field" placeholder="Name"></div>
-                            <div class="col-5"><input type="text" class="form-control form-control-sm ticket-field" placeholder="Ticket"></div>
-                        </div>`;
+            // Gender Math Check
+            const m = parseInt(document.getElementById('men').value) || 0;
+            const w = parseInt(document.getElementById('women').value) || 0;
+            const o = parseInt(document.getElementById('other').value) || 0;
+            
+            if ((m + w + o) !== tTurn && tTurn > 0) {
+                document.getElementById('genderError').style.display = 'block';
+                document.querySelectorAll('.gender-calc').forEach(x => x.classList.add('is-invalid'));
+            } else {
+                document.getElementById('genderError').style.display = 'none';
+                document.querySelectorAll('.gender-calc').forEach(x => x.classList.remove('is-invalid'));
+            }
+
+            // Generate Absentee Inputs
+            if (el.classList.contains('calc')) {
+                const container = document.getElementById('absenteeSection');
+                container.innerHTML = '';
+                if (abs > 0) {
+                    container.innerHTML = `<label class="text-danger mt-2">Absentee Details (Optional)</label>`;
+                    for (let i = 0; i < abs; i++) {
+                        container.innerHTML += `<div class="absentee-row row g-1"><div class="col-7"><input type="text" class="form-control form-control-sm name-field" placeholder="Name"></div><div class="col-5"><input type="text" class="form-control form-control-sm ticket-field" placeholder="Ticket"></div></div>`;
+                    }
                 }
             }
         });
     });
 
-    // SUBMIT FORM
+    // SUBMIT DATA
     document.getElementById('trekForm').onsubmit = async (e) => {
         e.preventDefault();
+        
+        const tTurn = parseInt(document.getElementById('dispTotalTurn').innerText);
+        const gTotal = (parseInt(document.getElementById('men').value) || 0) + (parseInt(document.getElementById('women').value) || 0) + (parseInt(document.getElementById('other').value) || 0);
+        
+        if (gTotal !== tTurn) {
+            alert("STOP: Men + Women + Other must equal Total Attended!");
+            return;
+        }
+
         const btn = document.getElementById('submitBtn');
-        btn.disabled = true;
-        btn.innerText = "Processing...";
+        btn.disabled = true; btn.innerText = "Saving to Sheet...";
 
         const payload = {
             date: document.getElementById('date').value,
             onlineReg: document.getElementById('onReg').value,
             offlineReg: document.getElementById('offReg').value,
-            totalReg: document.getElementById('dispTotalReg').innerText,
+            totalReg: parseInt(document.getElementById('dispTotalReg').innerText),
             onlineTurnout: document.getElementById('onTurn').value,
             offlineTurnout: document.getElementById('offTurn').value,
-            totalTurnout: document.getElementById('dispTotalTurn').innerText,
+            totalTurnout: tTurn,
             men: document.getElementById('men').value,
             women: document.getElementById('women').value,
             other: document.getElementById('other').value,
-            absenteeList: Array.from(document.querySelectorAll('.name-field')).map((el, i) => ({
-                name: el.value,
-                ticket: document.querySelectorAll('.ticket-field')[i].value
-            }))
+            absenteeList: Array.from(document.querySelectorAll('.name-field')).map((el, i) => ({ name: el.value, ticket: document.querySelectorAll('.ticket-field')[i].value }))
         };
 
         try {
             await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-            alert("Entry Saved Successfully!");
+            alert("Record Updated Successfully!");
             location.reload();
-        } catch (e) { alert("Network Error"); btn.disabled = false; }
+        } catch (e) { alert("Error connecting to Google."); btn.disabled = false; }
     };
 
-    // FETCH REPORT DATA
+    // FETCH REPORT
     async function fetchReports(silent = false) {
-        const tbody = document.getElementById('reportData');
-        if(!silent) tbody.innerHTML = '<tr><td colspan="4" class="text-center">Loading...</td></tr>';
         try {
             const res = await fetch(WEB_APP_URL);
             allData = await res.json();
             allData.sort((a, b) => new Date(b.Date) - new Date(a.Date));
             if(!silent) renderTable(allData);
-        } catch (e) { if(!silent) tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error fetching data</td></tr>'; }
+        } catch (e) { console.error(e); }
     }
 
-    // RENDER TABLE WITH PERIOD TOTALS
+    // TABLE RENDER
     function renderTable(data) {
         const tbody = document.getElementById('reportData');
         const tfoot = document.getElementById('reportFooter');
+        let sR = 0, sT = 0, sM = 0, sW = 0, sO = 0;
         
-        if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No data found.</td></tr>';
-            tfoot.innerHTML = '';
-            return;
-        }
-
-        let sReg = 0, sTurn = 0, sM = 0, sW = 0, sO = 0;
-
         tbody.innerHTML = data.map(row => {
-            const r = parseInt(row['Total Reg']) || 0;
-            const t = parseInt(row['Total Turnout']) || 0;
-            const m = parseInt(row.Men) || 0;
-            const w = parseInt(row.Women) || 0;
-            const o = parseInt(row.Other) || 0;
-            sReg += r; sTurn += t; sM += m; sW += w; sO += o;
-
-            const d = new Date(row.Date).toLocaleDateString('en-GB');
-            return `<tr><td>${d}</td><td>${r}</td><td>${t}</td><td>${m}/${w}/${o}</td></tr>`;
+            const r = parseInt(row['Total Reg'])||0; const t = parseInt(row['Total Turnout'])||0;
+            const m = parseInt(row.Men)||0; const w = parseInt(row.Women)||0; const o = parseInt(row.Other)||0;
+            sR+=r; sT+=t; sM+=m; sW+=w; sO+=o;
+            return `<tr><td>${new Date(row.Date).toLocaleDateString('en-GB')}</td><td>${r}</td><td>${t}</td><td>${m}/${w}/${o}</td></tr>`;
         }).join('');
-
-        tfoot.innerHTML = `
-            <tr class="summary-row">
-                <td>PERIOD TOTAL</td>
-                <td>${sReg}</td>
-                <td>${sTurn}</td>
-                <td>${sM}/${sW}/${sO}</td>
-            </tr>`;
+        
+        tfoot.innerHTML = `<tr class="summary-row"><td>TOTAL</td><td>${sR}</td><td>${sT}</td><td>${sM}/${sW}/${sO}</td></tr>`;
     }
 
-    // DATE FILTERING
     function filterReport() {
-        const sInput = document.getElementById('fromDate').value;
-        const eInput = document.getElementById('toDate').value;
-        if (!sInput || !eInput) return alert("Select Range");
-
-        const start = new Date(sInput); start.setHours(0,0,0,0);
-        const end = new Date(eInput); end.setHours(23,59,59,999);
-
-        const filtered = allData.filter(row => {
-            const d = new Date(row.Date);
-            return d >= start && d <= end;
-        });
+        const start = new Date(document.getElementById('fromDate').value); start.setHours(0,0,0,0);
+        const end = new Date(document.getElementById('toDate').value); end.setHours(23,59,59,999);
+        const filtered = allData.filter(row => { const d = new Date(row.Date); return d >= start && d <= end; });
         renderTable(filtered);
     }
 
-    // Initial background load for duplicate checking
+    // Load data on page open so we can detect duplicates immediately
     window.onload = () => fetchReports(true);
 </script>
 </body>
