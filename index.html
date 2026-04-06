@@ -3,68 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agasthyaarkoodam Portal</title>
+    <title>Agasthyaarkoodam Tracker</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f0f2f5; }
-        .card { border-radius: 15px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        body { background-color: #f8f9fa; font-family: sans-serif; }
+        .card { border-radius: 12px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .stats-box { background: #e7f3ef; border: 1px solid #b2d8ce; border-radius: 8px; padding: 10px; margin-bottom: 20px; }
+        .absentee-row { background: #fff; padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid #ffc107; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .nav-pills .nav-link.active { background-color: #198754; }
-        .absentee-row { background: #fff; padding: 10px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #ffc107; }
-        .report-table { font-size: 0.85rem; }
     </style>
 </head>
 <body>
 
-<div class="container py-4">
-    <ul class="nav nav-pills nav-fill mb-4" id="pills-tab" role="tablist">
-        <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#entryForm">Daily Entry</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#reportSection" onclick="fetchReports()">Reports</button></li>
+<div class="container py-3">
+    <ul class="nav nav-pills nav-fill mb-3" id="pills-tab">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#entryForm">Data Entry</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#reportSection" onclick="fetchReports()">View Reports</button></li>
     </ul>
 
     <div class="tab-content">
         <div class="tab-pane fade show active" id="entryForm">
-            <div class="card p-4">
-                <h5 class="text-success mb-3">Trekker Daily Log</h5>
+            <div class="card p-3">
+                <h5 class="text-success text-center mb-3">Daily Trekker Log</h5>
+                
+                <div class="stats-box row text-center g-0">
+                    <div class="col-4">
+                        <small class="d-block text-muted">Total Reg</small>
+                        <strong id="dispTotalReg">0</strong>
+                    </div>
+                    <div class="col-4">
+                        <small class="d-block text-muted">Total Attd</small>
+                        <strong id="dispTotalTurn" class="text-success">0</strong>
+                    </div>
+                    <div class="col-4">
+                        <small class="d-block text-muted">Absentees</small>
+                        <strong id="dispAbsentees" class="text-danger">0</strong>
+                    </div>
+                </div>
+
                 <form id="trekForm">
-                    <input type="date" id="date" class="form-control mb-3" required>
+                    <div class="mb-3">
+                        <label class="small fw-bold">Trek Date</label>
+                        <input type="date" id="date" class="form-control" required>
+                    </div>
                     
-                    <label class="small fw-bold">Registration (Online / Offline)</label>
                     <div class="row g-2 mb-3">
-                        <div class="col-6"><input type="number" id="onReg" class="form-control calc" placeholder="Online" value="0"></div>
-                        <div class="col-6"><input type="number" id="offReg" class="form-control calc" placeholder="Offline" value="0"></div>
+                        <div class="col-6">
+                            <label class="small fw-bold">Online Reg</label>
+                            <input type="number" id="onReg" class="form-control calc-trigger" value="0" min="0">
+                        </div>
+                        <div class="col-6">
+                            <label class="small fw-bold">Offline Reg</label>
+                            <input type="number" id="offReg" class="form-control calc-trigger" value="0" min="0">
+                        </div>
                     </div>
 
-                    <label class="small fw-bold">Turnout (Online / Offline)</label>
                     <div class="row g-2 mb-3">
-                        <div class="col-6"><input type="number" id="onTurn" class="form-control calc" placeholder="Online" value="0"></div>
-                        <div class="col-6"><input type="number" id="offTurn" class="form-control calc" placeholder="Offline" value="0"></div>
+                        <div class="col-6">
+                            <label class="small fw-bold">Online Attd</label>
+                            <input type="number" id="onTurn" class="form-control calc-trigger" value="0" min="0">
+                        </div>
+                        <div class="col-6">
+                            <label class="small fw-bold">Offline Attd</label>
+                            <input type="number" id="offTurn" class="form-control calc-trigger" value="0" min="0">
+                        </div>
                     </div>
 
-                    <label class="small fw-bold">Demographics (Men / Women / Other)</label>
-                    <div class="row g-3 mb-3">
-                        <div class="col-4"><input type="number" id="men" class="form-control" placeholder="M" value="0"></div>
-                        <div class="col-4"><input type="number" id="women" class="form-control" placeholder="W" value="0"></div>
-                        <div class="col-4"><input type="number" id="other" class="form-control" placeholder="O" value="0"></div>
+                    <label class="small fw-bold">Gender Breakout (Attended)</label>
+                    <div class="row g-2 mb-3 text-center">
+                        <div class="col-4"><input type="number" id="men" class="form-control" placeholder="Men" value="0"></div>
+                        <div class="col-4"><input type="number" id="women" class="form-control" placeholder="Women" value="0"></div>
+                        <div class="col-4"><input type="number" id="other" class="form-control" placeholder="Other" value="0"></div>
                     </div>
 
                     <div id="absenteeSection"></div>
 
-                    <button type="submit" id="submitBtn" class="btn btn-success w-100 mt-3">Submit Data</button>
+                    <button type="submit" id="submitBtn" class="btn btn-success w-100 mt-3 py-2 fw-bold">SAVE TO GOOGLE SHEET</button>
                 </form>
             </div>
         </div>
 
         <div class="tab-pane fade" id="reportSection">
             <div class="card p-3">
-                <h5>Summary Report</h5>
-                <div class="row g-2 mb-3">
+                <h6>Filter Reports</h6>
+                <div class="row g-1 mb-3">
                     <div class="col-5"><input type="date" id="fromDate" class="form-control form-control-sm"></div>
                     <div class="col-5"><input type="date" id="toDate" class="form-control form-control-sm"></div>
-                    <div class="col-2"><button class="btn btn-primary btn-sm w-100" onclick="filterReport()">Go</button></div>
+                    <div class="col-2"><button class="btn btn-dark btn-sm w-100" onclick="filterReport()">OK</button></div>
                 </div>
                 <div class="table-responsive">
-                    <table class="table report-table">
-                        <thead><tr><th>Date</th><th>Reg</th><th>Attd</th><th>M/W/O</th></tr></thead>
+                    <table class="table table-sm small">
+                        <thead class="table-light"><tr><th>Date</th><th>Reg</th><th>Attd</th><th>M/W/O</th></tr></thead>
                         <tbody id="reportData"></tbody>
                     </table>
                 </div>
@@ -75,91 +104,79 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwxQeA0OZ_lhrrNPQnH2kKpPI-oxgnRcvT4xefOgKsU9quX7FSmuHmtqwe6pqQx2YkPHw/exec";
-    let fullData = [];
+    // IMPORTANT: REPLACE THIS URL
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxvgqqBLx-Aik-y75cWVx8-_qsxFozu5NBtwROm4TCI7PyEnSgoqsTfntvL6QcoXseZ5w/exec";
 
-    // Calculation Logic
-    document.querySelectorAll('.calc').forEach(el => {
-        el.addEventListener('input', () => {
-            const totalReg = (parseInt(document.getElementById('onReg').value) || 0) + (parseInt(document.getElementById('offReg').value) || 0);
-            const totalTurn = (parseInt(document.getElementById('onTurn').value) || 0) + (parseInt(document.getElementById('offTurn').value) || 0);
-            const absentees = totalReg - totalTurn;
+    function updateCalculations() {
+        const onR = parseInt(document.getElementById('onReg').value) || 0;
+        const offR = parseInt(document.getElementById('offReg').value) || 0;
+        const onT = parseInt(document.getElementById('onTurn').value) || 0;
+        const offT = parseInt(document.getElementById('offTurn').value) || 0;
 
-            const container = document.getElementById('absenteeSection');
-            container.innerHTML = '';
-            if (absentees > 0) {
-                container.innerHTML = `<p class="small text-muted mt-2">Absentees: ${absentees} (Optional Details)</p>`;
-                for (let i = 0; i < absentees; i++) {
-                    container.innerHTML += `
-                        <div class="absentee-row">
-                            <div class="row g-2">
-                                <div class="col-7"><input type="text" class="form-control form-control-sm name-field" placeholder="Name"></div>
-                                <div class="col-5"><input type="text" class="form-control form-control-sm ticket-field" placeholder="Ticket"></div>
-                            </div>
-                        </div>`;
-                }
+        const totalR = onR + offR;
+        const totalT = onT + offT;
+        const abs = totalR - totalT;
+
+        document.getElementById('dispTotalReg').innerText = totalR;
+        document.getElementById('dispTotalTurn').innerText = totalT;
+        document.getElementById('dispAbsentees').innerText = abs > 0 ? abs : 0;
+
+        const container = document.getElementById('absenteeSection');
+        container.innerHTML = '';
+        if (abs > 0) {
+            container.innerHTML = `<p class="small fw-bold text-danger mt-3">Absentee Info (Optional)</p>`;
+            for (let i = 0; i < abs; i++) {
+                container.innerHTML += `
+                    <div class="absentee-row row g-1">
+                        <div class="col-7"><input type="text" class="form-control form-control-sm name-field" placeholder="Name"></div>
+                        <div class="col-5"><input type="text" class="form-control form-control-sm ticket-field" placeholder="Ticket"></div>
+                    </div>`;
             }
-        });
-    });
+        }
+    }
 
-    // Form Submission
+    document.querySelectorAll('.calc-trigger').forEach(el => el.addEventListener('input', updateCalculations));
+
     document.getElementById('trekForm').onsubmit = async (e) => {
         e.preventDefault();
-        const submitBtn = document.getElementById('submitBtn');
-        submitBtn.disabled = true;
-
-        const names = document.querySelectorAll('.name-field');
-        const tickets = document.querySelectorAll('.ticket-field');
-        const absList = [];
-        names.forEach((el, i) => absList.push({ name: el.value, ticket: tickets[i].value }));
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerText = "Processing...";
 
         const payload = {
             date: document.getElementById('date').value,
             onlineReg: document.getElementById('onReg').value,
             offlineReg: document.getElementById('offReg').value,
-            totalReg: parseInt(document.getElementById('onReg').value) + parseInt(document.getElementById('offReg').value),
+            totalReg: document.getElementById('dispTotalReg').innerText,
             onlineTurnout: document.getElementById('onTurn').value,
             offlineTurnout: document.getElementById('offTurn').value,
-            totalTurnout: parseInt(document.getElementById('onTurn').value) + parseInt(document.getElementById('offTurn').value),
+            totalTurnout: document.getElementById('dispTotalTurn').innerText,
             men: document.getElementById('men').value,
             women: document.getElementById('women').value,
             other: document.getElementById('other').value,
-            absenteeList: absList
+            absenteeList: Array.from(document.querySelectorAll('.name-field')).map((el, i) => ({
+                name: el.value,
+                ticket: document.querySelectorAll('.ticket-field')[i].value
+            }))
         };
 
-        await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-        alert("Saved!");
-        location.reload();
+        try {
+            // Using fetch with 'no-cors' is necessary for Apps Script, 
+            // but note that it won't return a "success" status to JS. 
+            await fetch(WEB_APP_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                cache: 'no-cache',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            alert("Data Sent! Please check your Google Sheet in a few seconds.");
+            location.reload();
+        } catch (err) {
+            alert("Error: " + err);
+            btn.disabled = false;
+        }
     };
-
-    // Report Fetching
-    async function fetchReports() {
-        const res = await fetch(WEB_APP_URL);
-        fullData = await res.json();
-        displayData(fullData);
-    }
-
-    function displayData(data) {
-        const tbody = document.getElementById('reportData');
-        tbody.innerHTML = data.map(row => `
-            <tr>
-                <td>${new Date(row.Date).toLocaleDateString('en-GB')}</td>
-                <td>${row['Total Reg']}</td>
-                <td>${row['Total Turnout']}</td>
-                <td>${row.Men}/${row.Women}/${row.Other}</td>
-            </tr>
-        `).join('');
-    }
-
-    function filterReport() {
-        const from = new Date(document.getElementById('fromDate').value);
-        const to = new Date(document.getElementById('toDate').value);
-        const filtered = fullData.filter(row => {
-            const d = new Date(row.Date);
-            return d >= from && d <= to;
-        });
-        displayData(filtered);
-    }
 </script>
 </body>
 </html>
