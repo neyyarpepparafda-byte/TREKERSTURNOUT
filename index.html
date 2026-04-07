@@ -3,66 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agasthyaarkoodam Trek Portal</title>
+    <title>Agasthyaarkoodam Portal</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f4f7f6; padding-bottom: 50px; }
-        .card { border-radius: 12px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .stats-box { background: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 10px; padding: 15px; margin-bottom: 15px; }
-        .nav-pills .nav-link.active { background-color: #2e7d32; }
-        .absentee-row { background: #fff; padding: 10px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid #ffc107; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .summary-row { background-color: #343a40 !important; color: white; font-weight: bold; }
-        label { font-size: 0.75rem; font-weight: bold; color: #555; text-transform: uppercase; }
-        .table-responsive { max-height: 400px; overflow-y: auto; font-size: 0.85rem; }
+        body { background-color: #f8f9fa; padding-bottom: 30px; font-family: sans-serif; }
+        .card { border-radius: 12px; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .stats-box { background: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 8px; padding: 12px; margin-bottom: 15px; }
+        .nav-pills .nav-link.active { background-color: #198754; }
+        .absentee-row { background: #fff; padding: 10px; border-radius: 6px; margin-bottom: 6px; border-left: 4px solid #ffc107; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .summary-row { background-color: #212529 !important; color: white; font-weight: bold; }
+        label { font-size: 0.75rem; font-weight: bold; color: #444; margin-bottom: 2px; }
+        .is-invalid { border: 2px solid #dc3545 !important; }
+        .table-responsive { max-height: 450px; overflow-y: auto; font-size: 0.85rem; }
     </style>
 </head>
 <body>
 
 <div class="container py-3">
-    <h4 class="text-center text-success mb-3">Trek Management Portal</h4>
+    <h4 class="text-center text-success fw-bold mb-3">Trek Management System</h4>
     
-    <ul class="nav nav-pills nav-fill mb-3" id="pills-tab">
-        <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#entryForm">Entry</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#reportSection" onclick="fetchData()">Summary</button></li>
-        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#absenteeReport" onclick="fetchData()">Absentees</button></li>
+    <ul class="nav nav-pills nav-fill mb-3" id="mainTabs">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#entryTab">ENTRY</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#summaryTab" onclick="loadAllData()">SUMMARY</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#absenteeTab" onclick="loadAllData()">ABSENTEES</button></li>
     </ul>
 
     <div class="tab-content">
-        <div class="tab-pane fade show active" id="entryForm">
+        <div class="tab-pane fade show active" id="entryTab">
             <div class="card p-3">
-                <div id="dateWarning" class="alert alert-danger py-2 small fw-bold text-center" style="display:none;">⚠️ DUPLICATE DATE: Will overwrite existing records.</div>
+                <div id="duplicateWarning" class="alert alert-danger py-2 small fw-bold text-center" style="display:none;">⚠️ DUPLICATE DATE: This will overwrite existing data.</div>
+                
                 <div class="stats-box row text-center g-0">
-                    <div class="col-4"><small class="d-block text-muted">Reg</small><span id="dispTotalReg" class="fw-bold">0</span></div>
-                    <div class="col-4 border-start border-end"><small class="d-block text-muted">Attd</small><span id="dispTotalTurn" class="fw-bold text-success">0</span></div>
-                    <div class="col-4"><small class="d-block text-muted">Abs</small><span id="dispAbs" class="fw-bold text-danger">0</span></div>
+                    <div class="col-4"><small class="d-block text-muted">REG</small><span id="statReg" class="fw-bold">0</span></div>
+                    <div class="col-4 border-start border-end"><small class="d-block text-muted">ATTD</small><span id="statAttd" class="fw-bold text-success">0</span></div>
+                    <div class="col-4"><small class="d-block text-muted">ABS</small><span id="statAbs" class="fw-bold text-danger">0</span></div>
                 </div>
-                <form id="trekForm">
-                    <div class="mb-2"><label>Trek Date</label><input type="date" id="date" class="form-control" required onchange="checkExistingDate()"></div>
+
+                <form id="mainForm">
+                    <div class="mb-2"><label>TREK DATE</label><input type="date" id="trekDate" class="form-control" required onchange="checkDuplicate()"></div>
+                    
                     <div class="row g-2 mb-2">
-                        <div class="col-6"><label>Online Reg</label><input type="number" id="onReg" class="form-control calc" value="0"></div>
-                        <div class="col-6"><label>Offline Reg</label><input type="number" id="offReg" class="form-control calc" value="0"></div>
+                        <div class="col-6"><label>ONLINE REG</label><input type="number" id="onReg" class="form-control calc" value="0" min="0"></div>
+                        <div class="col-6"><label>OFFLINE REG</label><input type="number" id="offReg" class="form-control calc" value="0" min="0"></div>
                     </div>
                     <div class="row g-2 mb-2">
-                        <div class="col-6"><label>Online Attd</label><input type="number" id="onTurn" class="form-control calc" value="0"></div>
-                        <div class="col-6"><label>Offline Attd</label><input type="number" id="offTurn" class="form-control calc" value="0"></div>
+                        <div class="col-6"><label>ONLINE ATTD</label><input type="number" id="onAttd" class="form-control calc" value="0" min="0"></div>
+                        <div class="col-6"><label>OFFLINE ATTD</label><input type="number" id="offAttd" class="form-control calc" value="0" min="0"></div>
                     </div>
-                    <div class="row g-2 mb-2">
-                        <div class="col-4"><label>Men</label><input type="number" id="men" class="form-control gender-calc" value="0"></div>
-                        <div class="col-4"><label>Women</label><input type="number" id="women" class="form-control gender-calc" value="0"></div>
-                        <div class="col-4"><label>Other</label><input type="number" id="other" class="form-control gender-calc" value="0"></div>
+                    <div class="row g-2 mb-1">
+                        <div class="col-4"><label>MEN</label><input type="number" id="men" class="form-control gender-calc" value="0" min="0"></div>
+                        <div class="col-4"><label>WOMEN</label><input type="number" id="women" class="form-control gender-calc" value="0" min="0"></div>
+                        <div class="col-4"><label>OTHER</label><input type="number" id="other" class="form-control gender-calc" value="0" min="0"></div>
                     </div>
-                    <div id="absenteeSection"></div>
-                    <button type="submit" id="submitBtn" class="btn btn-success w-100 mt-3 fw-bold">SUBMIT DATA</button>
+                    <p id="genderErr" class="text-danger small fw-bold mb-3" style="display:none;">⚠️ M+W+O must equal Total Attended!</p>
+
+                    <div id="absenteeInputs"></div>
+                    <button type="submit" id="submitBtn" class="btn btn-success w-100 mt-2 fw-bold">SUBMIT RECORD</button>
                 </form>
             </div>
         </div>
 
-        <div class="tab-pane fade" id="reportSection">
+        <div class="tab-pane fade" id="summaryTab">
             <div class="card p-3">
                 <div class="row g-1 mb-2">
-                    <div class="col-5"><input type="date" id="sFrom" class="form-control form-control-sm"></div>
-                    <div class="col-5"><input type="date" id="sTo" class="form-control form-control-sm"></div>
-                    <div class="col-2"><button class="btn btn-primary btn-sm w-100" onclick="filterSummary()">GO</button></div>
+                    <div class="col-5"><input type="date" id="sStart" class="form-control form-control-sm"></div>
+                    <div class="col-5"><input type="date" id="sEnd" class="form-control form-control-sm"></div>
+                    <div class="col-2"><button class="btn btn-dark btn-sm w-100" onclick="filterSummary()">GO</button></div>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-sm table-bordered">
@@ -74,17 +80,17 @@
             </div>
         </div>
 
-        <div class="tab-pane fade" id="absenteeReport">
+        <div class="tab-pane fade" id="absenteeTab">
             <div class="card p-3">
                 <div class="row g-1 mb-2">
-                    <div class="col-5"><input type="date" id="aFrom" class="form-control form-control-sm"></div>
-                    <div class="col-5"><input type="date" id="aTo" class="form-control form-control-sm"></div>
-                    <div class="col-2"><button class="btn btn-primary btn-sm w-100" onclick="filterAbsentees()">GO</button></div>
+                    <div class="col-5"><input type="date" id="aStart" class="form-control form-control-sm"></div>
+                    <div class="col-5"><input type="date" id="aEnd" class="form-control form-control-sm"></div>
+                    <div class="col-2"><button class="btn btn-dark btn-sm w-100" onclick="filterAbsentees()">GO</button></div>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-sm table-bordered">
                         <thead class="table-dark"><tr><th>Date</th><th>Name</th><th>Ticket</th><th>Type</th></tr></thead>
-                        <tbody id="absenteeBody"></tbody>
+                        <tbody id="absBody"></tbody>
                     </table>
                 </div>
             </div>
@@ -93,102 +99,120 @@
 </div>
 
 <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxTSpIXCXwSIAXjMOdPS1_mW2Vzdb9Z6XhVVWam6tii9Qv57i6hq3zYv3gg8Jnj080ZUw/exec"; 
-    let globalSummary = [];
-    let globalAbsentees = [];
+    const API = "https://script.google.com/macros/s/AKfycbxSVUBxMc2y2XDzEF5gMcm_OgvreIHDkcd9m_ruxGbjUxGFbaAzPnDVziBS1jOqik58mQ/exec"; 
+    let cachedSummary = [];
+    let cachedAbsentees = [];
 
-    async function fetchData(silent = false) {
+    // 1. Initial Load & Data Fetch
+    async function loadAllData(silent = false) {
         try {
-            const res = await fetch(WEB_APP_URL);
-            const data = await res.json();
-            globalSummary = data.summary.sort((a,b) => new Date(b.Date) - new Date(a.Date));
-            globalAbsentees = data.absentees.sort((a,b) => new Date(b.Date) - new Date(a.Date));
-            if(!silent) { renderSummary(globalSummary); renderAbsentees(globalAbsentees); }
-        } catch(e) { console.error(e); }
+            const r = await fetch(API);
+            const d = await r.json();
+            cachedSummary = d.summary.sort((a,b) => new Date(b.Date) - new Date(a.Date));
+            cachedAbsentees = d.absentees.sort((a,b) => new Date(b.Date) - new Date(a.Date));
+            if(!silent) { renderSummary(cachedSummary); renderAbs(cachedAbsentees); }
+        } catch(e) { alert("Load failed. Check API URL."); }
     }
 
-    function checkExistingDate() {
-        const sel = document.getElementById('date').value;
-        const exists = globalSummary.some(r => new Date(r.Date).toISOString().split('T')[0] === sel);
-        document.getElementById('dateWarning').style.display = exists ? 'block' : 'none';
+    // 2. Duplicate Check
+    function checkDuplicate() {
+        const val = document.getElementById('trekDate').value;
+        const exists = cachedSummary.some(r => new Date(r.Date).toISOString().split('T')[0] === val);
+        document.getElementById('duplicateWarning').style.display = exists ? 'block' : 'none';
     }
 
+    // 3. Real-time Calculations
     document.querySelectorAll('.calc, .gender-calc').forEach(el => {
         el.addEventListener('input', () => {
-            const onR = +document.getElementById('onReg').value, offR = +document.getElementById('offReg').value;
-            const onT = +document.getElementById('onTurn').value, offT = +document.getElementById('offTurn').value;
-            const tReg = onR + offR, tTurn = onT + offT, abs = tReg - tTurn;
-            document.getElementById('dispTotalReg').innerText = tReg;
-            document.getElementById('dispTotalTurn').innerText = tTurn;
-            document.getElementById('dispAbs').innerText = abs > 0 ? abs : 0;
-            
+            const oR = +document.getElementById('onReg').value, fR = +document.getElementById('offReg').value;
+            const oA = +document.getElementById('onAttd').value, fA = +document.getElementById('offAttd').value;
+            const tR = oR + fR, tA = oA + fA, abs = tR - tA;
+
+            document.getElementById('statReg').innerText = tR;
+            document.getElementById('statAttd').innerText = tA;
+            document.getElementById('statAbs').innerText = abs > 0 ? abs : 0;
+
+            const m = +document.getElementById('men').value, w = +document.getElementById('women').value, o = +document.getElementById('other').value;
+            const gShow = (m+w+o !== tA && tA > 0);
+            document.getElementById('genderErr').style.display = gShow ? 'block' : 'none';
+            document.querySelectorAll('.gender-calc').forEach(i => gShow ? i.classList.add('is-invalid') : i.classList.remove('is-invalid'));
+
             if (el.classList.contains('calc')) {
-                const container = document.getElementById('absenteeSection');
-                container.innerHTML = abs > 0 ? '<label class="text-danger mt-2">Absentee List</label>' : '';
-                for (let i = 0; i < abs; i++) {
+                const container = document.getElementById('absenteeInputs');
+                container.innerHTML = abs > 0 ? '<label class="text-danger mt-2">ABSENTEE DETAILS</label>' : '';
+                for(let i=0; i<abs; i++) {
                     container.innerHTML += `
-                    <div class="absentee-row row g-1">
-                        <div class="col-5"><input type="text" class="form-control form-control-sm abs-name" placeholder="Name"></div>
-                        <div class="col-4"><input type="text" class="form-control form-control-sm abs-tkt" placeholder="Ticket"></div>
-                        <div class="col-3"><select class="form-select form-select-sm abs-type"><option value="Online">On</option><option value="Offline">Off</option></select></div>
-                    </div>`;
+                        <div class="absentee-row row g-1">
+                            <div class="col-5"><input type="text" class="form-control form-control-sm a-name" placeholder="Name" required></div>
+                            <div class="col-4"><input type="text" class="form-control form-control-sm a-tkt" placeholder="Ticket" required></div>
+                            <div class="col-3"><select class="form-select form-select-sm a-type"><option value="Online">On</option><option value="Offline">Off</option></select></div>
+                        </div>`;
                 }
             }
         });
     });
 
-    document.getElementById('trekForm').onsubmit = async (e) => {
+    // 4. Form Submission (with Hard Validation)
+    document.getElementById('mainForm').onsubmit = async (e) => {
         e.preventDefault();
-        const tTurn = +document.getElementById('dispTotalTurn').innerText;
-        const gTotal = (+document.getElementById('men').value) + (+document.getElementById('women').value) + (+document.getElementById('other').value);
-        if (gTotal !== tTurn) return alert("Gender total must match Attended!");
+        const tA = +document.getElementById('statAttd').innerText;
+        const gT = (+document.getElementById('men').value) + (+document.getElementById('women').value) + (+document.getElementById('other').value);
+        
+        if (gT !== tA) {
+            alert("HARD VALIDATION ERROR: Men + Women + Other must equal Total Attended (" + tA + ")");
+            return;
+        }
 
         const btn = document.getElementById('submitBtn'); btn.disabled = true; btn.innerText = "Saving...";
+        
         const payload = {
-            date: document.getElementById('date').value,
+            date: document.getElementById('trekDate').value,
             onlineReg: document.getElementById('onReg').value, offlineReg: document.getElementById('offReg').value,
-            totalReg: document.getElementById('dispTotalReg').innerText,
-            onlineTurnout: document.getElementById('onTurn').value, offlineTurnout: document.getElementById('offTurn').value,
-            totalTurnout: tTurn, men: document.getElementById('men').value, women: document.getElementById('women').value, other: document.getElementById('other').value,
-            absenteeList: Array.from(document.querySelectorAll('.absentee-row')).map(row => ({
-                name: row.querySelector('.abs-name').value, ticket: row.querySelector('.abs-tkt').value, type: row.querySelector('.abs-type').value
+            totalReg: document.getElementById('statReg').innerText,
+            onlineTurnout: document.getElementById('onAttd').value, offlineTurnout: document.getElementById('offAttd').value,
+            totalTurnout: tA, men: document.getElementById('men').value, women: document.getElementById('women').value, other: document.getElementById('other').value,
+            absenteeList: Array.from(document.querySelectorAll('.absentee-row')).map(r => ({
+                name: r.querySelector('.a-name').value, ticket: r.querySelector('.a-tkt').value, type: r.querySelector('.a-type').value
             }))
         };
+
         try {
-            await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
-            alert("Success!"); location.reload();
+            await fetch(API, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+            alert("Success! Page will reset.");
+            location.reload();
         } catch(e) { alert("Error!"); btn.disabled = false; }
     };
 
+    // 5. Reporting Logic
     function renderSummary(data) {
-        let sR=0, sT=0, sM=0, sW=0, sO=0;
+        let rSum=0, aSum=0, mSum=0, wSum=0, oSum=0;
         document.getElementById('summaryBody').innerHTML = data.map(r => {
-            const reg=+r['Total Reg']||0, t=+r['Total Turnout']||0, m=+r.Men||0, w=+r.Women||0, o=+r.Other||0;
-            sR+=reg; sT+=t; sM+=m; sW+=w; sO+=o;
-            return `<tr><td>${new Date(r.Date).toLocaleDateString('en-GB')}</td><td>${reg}</td><td>${t}</td><td>${m}/${w}/${o}</td></tr>`;
+            const reg=+r['Total Reg']||0, att=+r['Total Turnout']||0, m=+r.Men||0, w=+r.Women||0, o=+r.Other||0;
+            rSum+=reg; aSum+=att; mSum+=m; wSum+=w; oSum+=o;
+            return `<tr><td>${new Date(r.Date).toLocaleDateString('en-GB')}</td><td>${reg}</td><td>${att}</td><td>${m}/${w}/${o}</td></tr>`;
         }).join('');
-        document.getElementById('summaryFoot').innerHTML = `<tr class="summary-row"><td>TOTAL</td><td>${sR}</td><td>${sT}</td><td>${sM}/${sW}/${sO}</td></tr>`;
+        document.getElementById('summaryFoot').innerHTML = `<tr class="summary-row"><td>TOTAL</td><td>${rSum}</td><td>${aSum}</td><td>${mSum}/${wSum}/${oSum}</td></tr>`;
     }
 
-    function renderAbsentees(data) {
-        document.getElementById('absenteeBody').innerHTML = data.map(r => `
+    function renderAbs(data) {
+        document.getElementById('absBody').innerHTML = data.map(r => `
             <tr><td>${new Date(r.Date).toLocaleDateString('en-GB')}</td><td>${r.Name}</td><td>${r['Ticket No']}</td><td>${r.Type}</td></tr>
         `).join('');
     }
 
     function filterSummary() {
-        const start = new Date(document.getElementById('sFrom').value || '1900-01-01').setHours(0,0,0,0);
-        const end = new Date(document.getElementById('sTo').value || '2100-01-01').setHours(23,59,59,999);
-        renderSummary(globalSummary.filter(r => { const d = new Date(r.Date); return d >= start && d <= end; }));
+        const s = new Date(document.getElementById('sStart').value || '1900-01-01').setHours(0,0,0,0);
+        const e = new Date(document.getElementById('sEnd').value || '2100-01-01').setHours(23,59,59,999);
+        renderSummary(cachedSummary.filter(r => { const d = new Date(r.Date); return d >= s && d <= e; }));
     }
 
     function filterAbsentees() {
-        const start = new Date(document.getElementById('aFrom').value || '1900-01-01').setHours(0,0,0,0);
-        const end = new Date(document.getElementById('aTo').value || '2100-01-01').setHours(23,59,59,999);
-        renderAbsentees(globalAbsentees.filter(r => { const d = new Date(r.Date); return d >= start && d <= end; }));
+        const s = new Date(document.getElementById('aStart').value || '1900-01-01').setHours(0,0,0,0);
+        const e = new Date(document.getElementById('aEnd').value || '2100-01-01').setHours(23,59,59,999);
+        renderAbs(cachedAbsentees.filter(r => { const d = new Date(r.Date); return d >= s && d <= e; }));
     }
 
-    window.onload = () => fetchData(true);
+    window.onload = () => loadAllData(true);
 </script>
 </body>
 </html>
