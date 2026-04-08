@@ -19,6 +19,7 @@
         #dupWarn { display: none; }
         .table-sm thead th { font-size: 0.75rem; padding: 8px 4px; }
         .table-sm tbody td { padding: 6px 4px; font-size: 0.8rem; }
+        .debug-info { background: #f8f9fa; padding: 10px; margin-bottom: 10px; border-left: 4px solid #007bff; font-size: 0.85rem; display: none; }
     </style>
 </head>
 <body>
@@ -73,6 +74,8 @@
 
         <div class="tab-pane fade" id="summaryTab">
             <div class="card p-3">
+                <div id="debugInfo" class="debug-info"></div>
+                
                 <div class="row g-2 mb-3">
                     <div class="col-5"><label>From</label><input type="date" id="sS" class="form-control form-control-sm"></div>
                     <div class="col-5"><label>To</label><input type="date" id="sE" class="form-control form-control-sm"></div>
@@ -127,26 +130,58 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const URL = "https://script.google.com/macros/s/AKfycbwYGEuMaDzkA7aeuqKdUq6zv59Bi2GU-A_KaMMWGGR2CPoPrqMp7y3jFyg-ysRkQqLTZQ/exec"; 
+    const URL = "https://script.google.com/macros/s/AKfycbyrRGnNgaW8HDWmnjv_kuazg2rqX_CB_q_hOOlQcY_PGwI2tTX5CL1UDfKjg1o8H-VLzA/exec"; 
     let summaryData = [], absenteeData = [];
+
+    // Helper function to safely get property value with multiple possible key names
+    function getValue(obj, ...possibleKeys) {
+        for (let key of possibleKeys) {
+            if (obj[key] !== undefined) return obj[key];
+            // Also try lowercase version
+            let lowerKey = key.toLowerCase();
+            for (let k in obj) {
+                if (k.toLowerCase() === lowerKey) return obj[k];
+            }
+        }
+        return 0;
+    }
 
     // Initialize and Refresh Data
     async function loadData() {
         try {
             const r = await fetch(URL);
             const d = await r.json();
-            summaryData = d.summary;
-            absenteeData = d.absentees;
+            summaryData = d.summary || [];
+            absenteeData = d.absentees || [];
+            
+            // Debug: Log the raw data structure
+            console.log("Summary Data:", summaryData);
+            console.log("Absentee Data:", absenteeData);
+            
+            // Show debug info if summary data exists
+            if (summaryData.length > 0) {
+                const debugDiv = document.getElementById('debugInfo');
+                debugDiv.innerHTML = `<strong>✓ Data Loaded:</strong> ${summaryData.length} summary records found. Keys: ${Object.keys(summaryData[0]).join(', ')}`;
+                debugDiv.style.display = 'block';
+            }
+            
             renderSummary();
             renderAbs();
-        } catch(e) { console.error("Data Load Error:", e); }
+        } catch(e) { 
+            console.error("Data Load Error:", e);
+            document.getElementById('debugInfo').innerHTML = `<strong>✗ Error:</strong> ${e.message}`;
+            document.getElementById('debugInfo').style.display = 'block';
+        }
     }
 
     // Duplicate Check logic
     function checkDup() {
         const sel = document.getElementById('tDate').value;
         if (!sel) return;
-        const exists = summaryData.some(r => r.Date && r.Date.split('T')[0] === sel);
+        const exists = summaryData.some(r => {
+            const dateVal = getValue(r, 'Date', 'date');
+            return dateVal && dateVal.split('T')[0] === sel;
+        });
         document.getElementById('dupWarn').style.display = exists ? 'block' : 'none';
     }
 
@@ -221,18 +256,24 @@
         const start = document.getElementById('sS').value ? new Date(document.getElementById('sS').value).setHours(0,0,0,0) : 0;
         const end = document.getElementById('sE').value ? new Date(document.getElementById('sE').value).setHours(23,59,59,999) : 9e12;
         let totalOnReg=0, totalOffReg=0, totalReg=0, totalOnAtt=0, totalOffAtt=0, totalAtt=0, totalM=0, totalW=0, totalO=0;
-        const filtered = summaryData.filter(r => { const d = new Date(r.Date).getTime(); return d >= start && d <= end; });
+        
+        const filtered = summaryData.filter(r => { 
+            const dateVal = getValue(r, 'Date', 'date');
+            if (!dateVal) return false;
+            const d = new Date(dateVal).getTime(); 
+            return d >= start && d <= end; 
+        });
         
         document.getElementById('sBody').innerHTML = filtered.map(r => {
-            const onReg = +r.onlineReg || 0;
-            const offReg = +r.offlineReg || 0;
-            const totReg = +r.totalReg || 0;
-            const onAtt = +r.onlineTurnout || 0;
-            const offAtt = +r.offlineTurnout || 0;
-            const totAtt = +r.totalTurnout || 0;
-            const m = +r.men || 0;
-            const w = +r.women || 0;
-            const o = +r.other || 0;
+            const onReg = +getValue(r, 'onlineReg', 'Online Reg', 'online reg') || 0;
+            const offReg = +getValue(r, 'offlineReg', 'Offline Reg', 'offline reg') || 0;
+            const totReg = +getValue(r, 'totalReg', 'Total Reg', 'total reg') || 0;
+            const onAtt = +getValue(r, 'onlineTurnout', 'Online Turnout', 'online turnout', 'Online Attd') || 0;
+            const offAtt = +getValue(r, 'offlineTurnout', 'Offline Turnout', 'offline turnout', 'Offline Attd') || 0;
+            const totAtt = +getValue(r, 'totalTurnout', 'Total Turnout', 'total turnout', 'Total Attd') || 0;
+            const m = +getValue(r, 'men', 'Men') || 0;
+            const w = +getValue(r, 'women', 'Women') || 0;
+            const o = +getValue(r, 'other', 'Other') || 0;
             
             totalOnReg += onReg;
             totalOffReg += offReg;
@@ -244,7 +285,8 @@
             totalW += w;
             totalO += o;
             
-            return `<tr><td>${new Date(r.Date).toLocaleDateString('en-GB')}</td><td>${onReg}</td><td>${offReg}</td><td>${totReg}</td><td>${onAtt}</td><td>${offAtt}</td><td>${totAtt}</td><td>${m}</td><td>${w}</td><td>${o}</td></tr>`;
+            const dateVal = getValue(r, 'Date', 'date');
+            return `<tr><td>${new Date(dateVal).toLocaleDateString('en-GB')}</td><td>${onReg}</td><td>${offReg}</td><td>${totReg}</td><td>${onAtt}</td><td>${offAtt}</td><td>${totAtt}</td><td>${m}</td><td>${w}</td><td>${o}</td></tr>`;
         }).join('');
         
         document.getElementById('sFoot').innerHTML = `<tr class="summary-row"><td>TOTAL</td><td>${totalOnReg}</td><td>${totalOffReg}</td><td>${totalReg}</td><td>${totalOnAtt}</td><td>${totalOffAtt}</td><td>${totalAtt}</td><td>${totalM}</td><td>${totalW}</td><td>${totalO}</td></tr>`;
@@ -253,11 +295,21 @@
     function renderAbs() {
         const start = document.getElementById('aS').value ? new Date(document.getElementById('aS').value).setHours(0,0,0,0) : 0;
         const end = document.getElementById('aE').value ? new Date(document.getElementById('aE').value).setHours(23,59,59,999) : 9e12;
-        const filtered = absenteeData.filter(r => { const d = new Date(r.Date).getTime(); return d >= start && d <= end; });
         
-        document.getElementById('aBody').innerHTML = filtered.map(r => `
-            <tr><td>${new Date(r.Date).toLocaleDateString('en-GB')}</td><td>${r.Name}</td><td>${r['Ticket No']}</td><td>${r.Type}</td></tr>
-        `).join('');
+        const filtered = absenteeData.filter(r => { 
+            const dateVal = getValue(r, 'Date', 'date');
+            if (!dateVal) return false;
+            const d = new Date(dateVal).getTime(); 
+            return d >= start && d <= end; 
+        });
+        
+        document.getElementById('aBody').innerHTML = filtered.map(r => {
+            const dateVal = getValue(r, 'Date', 'date');
+            const name = getValue(r, 'Name', 'name');
+            const ticket = getValue(r, 'Ticket No', 'ticket no', 'ticket', 'Ticket');
+            const type = getValue(r, 'Type', 'type');
+            return `<tr><td>${new Date(dateVal).toLocaleDateString('en-GB')}</td><td>${name}</td><td>${ticket}</td><td>${type}</td></tr>`;
+        }).join('');
     }
 
     window.onload = () => loadData();
