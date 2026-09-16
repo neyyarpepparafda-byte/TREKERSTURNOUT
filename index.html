@@ -204,11 +204,11 @@
                 const area = document.getElementById('absArea');
                 area.innerHTML = abs > 0 ? '<label class="text-danger mt-3 mb-2">Detailed Absentee List</label>' : '';
                 for(let i=0; i<abs; i++) {
-                    area.innerHTML += `<div class="absentee-row row g-1">
-                        <div class="col-5"><input type="text" class="form-control form-control-sm a-n" placeholder="Name" required></div>
-                        <div class="col-4"><input type="text" class="form-control form-control-sm a-t" placeholder="Ticket" required></div>
-                        <div class="col-3"><select class="form-select form-select-sm a-y"><option value="Online">On</option><option value="Offline">Off</option></select></div>
-                    </div>`;
+area.innerHTML += `<div class="absentee-row row g-1">
+    <div class="col-5"><input type="text" class="form-control form-control-sm a-n" placeholder="Name"></div>
+    <div class="col-4"><input type="text" class="form-control form-control-sm a-t" placeholder="Ticket"></div>
+    <div class="col-3"><select class="form-select form-select-sm a-y"><option value="Online">On</option><option value="Offline">Off</option></select></div>
+</div>`;
                 }
             }
         });
@@ -220,12 +220,32 @@
         const ta = +document.getElementById('stAtt').innerText;
         const gt = (+document.getElementById('men').value) + (+document.getElementById('women').value) + (+document.getElementById('other').value);
         
-        if (gt !== ta) {
-            alert("HARD VALIDATION ERROR: The total of Men, Women, and Others (" + gt + ") does not match the Total Attended (" + ta + ").");
-            return;
-        }
+if (gt !== ta) {
+    alert("HARD VALIDATION ERROR: The total of Men, Women, and Others (" + gt + ") does not match the Total Attended (" + ta + ").");
+    return;
+}
 
-        const btn = document.getElementById('subBtn'); btn.disabled = true; btn.innerText = "Transmitting Data...";
+// Check absentee rows.
+// A row may be completely blank, but it cannot be partially filled.
+const absenteeRows = Array.from(document.querySelectorAll('.absentee-row'));
+
+for (const row of absenteeRows) {
+    const name = row.querySelector('.a-n').value.trim();
+    const ticket = row.querySelector('.a-t').value.trim();
+
+    const onlyOneFieldFilled =
+        (name !== '' && ticket === '') ||
+        (name === '' && ticket !== '');
+
+    if (onlyOneFieldFilled) {
+        alert("Please enter both the absentee name and ticket number, or leave the entire row blank.");
+        return;
+    }
+}
+
+const btn = document.getElementById('subBtn');
+btn.disabled = true;
+btn.innerText = "Transmitting Data...";
         
         const payload = {
             date: document.getElementById('tDate').value,
@@ -238,11 +258,13 @@
             men: document.getElementById('men').value, 
             women: document.getElementById('women').value, 
             other: document.getElementById('other').value,
-            absenteeList: Array.from(document.querySelectorAll('.absentee-row')).map(r => ({
-                name: r.querySelector('.a-n').value, 
-                ticket: r.querySelector('.a-t').value, 
-                type: r.querySelector('.a-y').value
-            }))
+absenteeList: absenteeRows
+    .map(r => ({
+        name: r.querySelector('.a-n').value.trim(),
+        ticket: r.querySelector('.a-t').value.trim(),
+        type: r.querySelector('.a-y').value
+    }))
+    .filter(p => p.name !== '' && p.ticket !== '')
         };
 
         try {
