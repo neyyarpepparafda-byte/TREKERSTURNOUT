@@ -4,43 +4,123 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agasthyaarkoodam Portal</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <style>
-        body { background-color: #f0f2f5; padding-bottom: 40px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .card { border-radius: 15px; border: none; box-shadow: 0 8px 20px rgba(0,0,0,0.08); margin-top: 10px; }
-        .stats-box { background: #ffffff; border: 1px solid #dee2e6; border-radius: 12px; padding: 15px; margin-bottom: 20px; }
-        .nav-pills .nav-link { color: #555; font-weight: 600; transition: 0.3s; }
-        .nav-pills .nav-link.active { background-color: #198754; box-shadow: 0 4px 10px rgba(25, 135, 84, 0.3); }
-        .absentee-row { background: #fff; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 5px solid #ffc107; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .summary-row { background-color: #212529 !important; color: white; font-weight: bold; }
-        label { font-size: 0.75rem; font-weight: bold; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
-        .table-responsive { max-height: 550px; overflow-y: auto; font-size: 0.85rem; border-radius: 8px; }
-        .is-invalid { border: 2px solid #dc3545 !important; }
-        #dupWarn { display: none; }
-        .table-sm thead th { font-size: 0.75rem; padding: 8px 4px; }
-        .table-sm tbody td { padding: 6px 4px; font-size: 0.8rem; }
-        .debug-info { background: #f8f9fa; padding: 10px; margin-bottom: 10px; border-left: 4px solid #007bff; font-size: 0.85rem; display: none; }
+        body {
+            background-color: #f0f2f5;
+            padding-bottom: 40px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .card {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            margin-top: 10px;
+        }
+
+        .stats-box {
+            background: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .nav-pills .nav-link {
+            color: #555;
+            font-weight: 600;
+        }
+
+        .nav-pills .nav-link.active {
+            background-color: #198754;
+            box-shadow: 0 4px 10px rgba(25, 135, 84, 0.3);
+        }
+
+        .absentee-row {
+            background: #fff;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 5px solid #ffc107;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .summary-row {
+            background-color: #212529 !important;
+            color: white;
+            font-weight: bold;
+        }
+
+        label {
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .table-responsive {
+            max-height: 550px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+            border-radius: 8px;
+        }
+
+        .table-sm thead th {
+            font-size: 0.75rem;
+            padding: 8px 4px;
+        }
+
+        .table-sm tbody td {
+            padding: 6px 4px;
+            font-size: 0.8rem;
+        }
+
+        .is-invalid {
+            border: 2px solid #dc3545 !important;
+        }
+
+        #dupWarn {
+            display: none;
+        }
+
+        .debug-info {
+            background: #f8f9fa;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid #007bff;
+            font-size: 0.85rem;
+            display: none;
+        }
 
         @media print {
             body {
-                background: #fff !important;
+                background: #ffffff !important;
                 padding: 0 !important;
             }
 
-            .nav, .no-print, .btn, #trekForm, #absArea, #debugInfo, .alert {
+            .nav,
+            .no-print,
+            .btn,
+            #trekForm,
+            #debugInfo,
+            #dupWarn {
                 display: none !important;
             }
 
             .card {
                 box-shadow: none !important;
                 border: none !important;
-                padding: 0 !important;
                 margin: 0 !important;
+                padding: 0 !important;
             }
 
             .table-responsive {
-                overflow: visible !important;
                 max-height: none !important;
+                overflow: visible !important;
             }
 
             table {
@@ -48,509 +128,992 @@
                 font-size: 10px !important;
             }
 
-            th, td {
+            th,
+            td {
                 padding: 6px !important;
             }
 
             .summary-row {
-                background: #000 !important;
-                color: #fff !important;
+                background: #000000 !important;
+                color: #ffffff !important;
             }
         }
     </style>
 </head>
+
 <body>
-    <div class="container py-4">
-        <h3 class="text-center text-success fw-bold mb-4">Agasthyaarkoodam Trek Portal</h3>
+<div class="container py-4">
 
-        <ul class="nav nav-pills nav-fill mb-4" id="tabMenu">
-            <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#entryTab">DATA ENTRY</button></li>
-            <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#summaryTab" onclick="loadData()">SUMMARY REPORT</button></li>
-            <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#absTab" onclick="loadData()">ABSENTEE LIST</button></li>
-        </ul>
+    <h3 class="text-center text-success fw-bold mb-4">
+        Agasthyaarkoodam Trek Portal
+    </h3>
 
-        <div class="tab-content">
-            <div class="tab-pane fade show active" id="entryTab">
-                <div class="card p-4">
-                    <div id="dupWarn" class="alert alert-warning py-2 small fw-bold text-center border-warning">⚠️ DATE ALREADY ENTERED: Submission will overwrite existing record.</div>
+    <ul class="nav nav-pills nav-fill mb-4" id="tabMenu">
+        <li class="nav-item">
+            <button class="nav-link active"
+                    data-bs-toggle="pill"
+                    data-bs-target="#entryTab">
+                DATA ENTRY
+            </button>
+        </li>
 
-                    <div class="stats-box row text-center g-0 shadow-sm">
-                        <div class="col-4"><small class="d-block text-muted">TOTAL REG</small><span id="stReg" class="h5 fw-bold mb-0">0</span></div>
-                        <div class="col-4 border-start border-end"><small class="d-block text-muted">ATTENDED</small><span id="stAtt" class="h5 fw-bold text-success mb-0">0</span></div>
-                        <div class="col-4"><small class="d-block text-muted">ABSENTEES</small><span id="stAbs" class="h5 fw-bold text-danger mb-0">0</span></div>
+        <li class="nav-item">
+            <button class="nav-link"
+                    data-bs-toggle="pill"
+                    data-bs-target="#summaryTab"
+                    onclick="loadData()">
+                SUMMARY REPORT
+            </button>
+        </li>
+
+        <li class="nav-item">
+            <button class="nav-link"
+                    data-bs-toggle="pill"
+                    data-bs-target="#absTab"
+                    onclick="loadData()">
+                ABSENTEE LIST
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+
+        <!-- DATA ENTRY TAB -->
+        <div class="tab-pane fade show active" id="entryTab">
+            <div class="card p-4">
+
+                <div id="dupWarn"
+                     class="alert alert-warning py-2 small fw-bold text-center border-warning">
+                    ⚠️ DATE ALREADY ENTERED: Submission will overwrite existing record.
+                </div>
+
+                <div id="editModeNote"
+                     class="alert alert-info py-2 small fw-bold text-center"
+                     style="display:none;">
+                    Editing existing record
+                </div>
+
+                <div class="stats-box row text-center g-0 shadow-sm">
+                    <div class="col-4">
+                        <small class="d-block text-muted">TOTAL REG</small>
+                        <span id="stReg" class="h5 fw-bold mb-0">0</span>
                     </div>
 
-                    <form id="trekForm">
-                        <div class="mb-3">
-                            <label>Trek Date</label>
-                            <input type="date" id="tDate" class="form-control form-control-lg" required onchange="checkDup()">
+                    <div class="col-4 border-start border-end">
+                        <small class="d-block text-muted">ATTENDED</small>
+                        <span id="stAtt" class="h5 fw-bold text-success mb-0">0</span>
+                    </div>
+
+                    <div class="col-4">
+                        <small class="d-block text-muted">ABSENTEES</small>
+                        <span id="stAbs" class="h5 fw-bold text-danger mb-0">0</span>
+                    </div>
+                </div>
+
+                <form id="trekForm">
+
+                    <div class="mb-3">
+                        <label>Trek Date</label>
+                        <input type="date"
+                               id="tDate"
+                               class="form-control form-control-lg"
+                               required
+                               onchange="checkDup()">
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label>Online Reg</label>
+                            <input type="number"
+                                   id="onR"
+                                   class="form-control calc"
+                                   value="0"
+                                   min="0">
                         </div>
 
-                        <div id="editModeNote" class="small text-primary fw-bold mb-2" style="display:none;">Editing existing record</div>
-
-                        <div class="row g-3 mb-3">
-                            <div class="col-6"><label>Online Reg</label><input type="number" id="onR" class="form-control calc" value="0" min="0"></div>
-                            <div class="col-6"><label>Offline Reg</label><input type="number" id="offR" class="form-control calc" value="0" min="0"></div>
+                        <div class="col-6">
+                            <label>Offline Reg</label>
+                            <input type="number"
+                                   id="offR"
+                                   class="form-control calc"
+                                   value="0"
+                                   min="0">
                         </div>
-                        <div class="row g-3 mb-3">
-                            <div class="col-6"><label>Online Attd</label><input type="number" id="onA" class="form-control calc" value="0" min="0"></div>
-                            <div class="col-6"><label>Offline Attd</label><input type="number" id="offA" class="form-control calc" value="0" min="0"></div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label>Online Attd</label>
+                            <input type="number"
+                                   id="onA"
+                                   class="form-control calc"
+                                   value="0"
+                                   min="0">
                         </div>
 
-                        <div class="p-3 bg-light rounded-3 mb-3 border">
-                            <label class="mb-2 d-block text-center text-primary">Gender Breakdown (Must match Attended)</label>
-                            <div class="row g-2">
-                                <div class="col-4"><label>Men</label><input type="number" id="men" class="form-control g-calc" value="0" min="0"></div>
-                                <div class="col-4"><label>Women</label><input type="number" id="women" class="form-control g-calc" value="0" min="0"></div>
-                                <div class="col-4"><label>Other</label><input type="number" id="other" class="form-control g-calc" value="0" min="0"></div>
+                        <div class="col-6">
+                            <label>Offline Attd</label>
+                            <input type="number"
+                                   id="offA"
+                                   class="form-control calc"
+                                   value="0"
+                                   min="0">
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-light rounded-3 mb-3 border">
+                        <label class="mb-2 d-block text-center text-primary">
+                            Gender Breakdown (Must match Attended)
+                        </label>
+
+                        <div class="row g-2">
+                            <div class="col-4">
+                                <label>Men</label>
+                                <input type="number"
+                                       id="men"
+                                       class="form-control g-calc"
+                                       value="0"
+                                       min="0">
                             </div>
-                            <p id="gErr" class="text-danger text-center small fw-bold mt-2 mb-0" style="display:none;">⚠️ Men + Women + Other must equal Total Attended!</p>
+
+                            <div class="col-4">
+                                <label>Women</label>
+                                <input type="number"
+                                       id="women"
+                                       class="form-control g-calc"
+                                       value="0"
+                                       min="0">
+                            </div>
+
+                            <div class="col-4">
+                                <label>Other</label>
+                                <input type="number"
+                                       id="other"
+                                       class="form-control g-calc"
+                                       value="0"
+                                       min="0">
+                            </div>
                         </div>
 
-                        <div id="absArea"></div>
+                        <p id="gErr"
+                           class="text-danger text-center small fw-bold mt-2 mb-0"
+                           style="display:none;">
+                            ⚠️ Men + Women + Other must equal Total Attended!
+                        </p>
+                    </div>
 
-                        <button type="button" class="btn btn-outline-secondary btn-md w-100 mt-2 no-print" onclick="resetForm()">NEW ENTRY</button>
-                        <button type="submit" id="subBtn" class="btn btn-success btn-lg w-100 mt-3 fw-bold no-print">SAVE DAILY RECORD</button>
-                    </form>
-                </div>
+                    <div id="absArea"></div>
+
+                    <button type="button"
+                            class="btn btn-outline-secondary w-100 mt-2 no-print"
+                            onclick="resetForm()">
+                        NEW ENTRY
+                    </button>
+
+                    <button type="submit"
+                            id="subBtn"
+                            class="btn btn-success btn-lg w-100 mt-3 fw-bold no-print">
+                        SAVE DAILY RECORD
+                    </button>
+                </form>
             </div>
+        </div>
 
-            <div class="tab-pane fade" id="summaryTab">
-                <div class="card p-3">
-                    <div class="d-flex justify-content-end mb-2 no-print">
-                        <button class="btn btn-outline-dark btn-sm" onclick="window.print()">PRINT SUMMARY</button>
+        <!-- SUMMARY TAB -->
+        <div class="tab-pane fade" id="summaryTab">
+            <div class="card p-3">
+
+                <div class="d-flex justify-content-end mb-2 no-print">
+                    <button class="btn btn-outline-dark btn-sm"
+                            onclick="window.print()">
+                        PRINT SUMMARY
+                    </button>
+                </div>
+
+                <div id="debugInfo" class="debug-info"></div>
+
+                <div class="row g-2 mb-3 no-print">
+                    <div class="col-5">
+                        <label>From</label>
+                        <input type="date"
+                               id="sS"
+                               class="form-control form-control-sm">
                     </div>
 
-                    <div id="debugInfo" class="debug-info"></div>
-
-                    <div class="row g-2 mb-3">
-                        <div class="col-5"><label>From</label><input type="date" id="sS" class="form-control form-control-sm"></div>
-                        <div class="col-5"><label>To</label><input type="date" id="sE" class="form-control form-control-sm"></div>
-                        <div class="col-2 d-flex align-items-end"><button class="btn btn-dark btn-sm w-100" onclick="renderSummary()">FILTER</button></div>
+                    <div class="col-5">
+                        <label>To</label>
+                        <input type="date"
+                               id="sE"
+                               class="form-control form-control-sm">
                     </div>
-                    <div class="table-responsive">
-                        <table class="table table-hover table-bordered align-middle table-sm">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th rowspan="2">Date</th>
-                                    <th colspan="3" class="text-center">Registration</th>
-                                    <th colspan="3" class="text-center">Attendance</th>
-                                    <th colspan="3" class="text-center">Gender (M/W/O)</th>
-                                    <th rowspan="2">Action</th>
-                                </tr>
-                                <tr>
-                                    <th>Online</th>
-                                    <th>Offline</th>
-                                    <th>Total</th>
-                                    <th>Online</th>
-                                    <th>Offline</th>
-                                    <th>Total</th>
-                                    <th>Men</th>
-                                    <th>Women</th>
-                                    <th>Other</th>
-                                </tr>
-                            </thead>
-                            <tbody id="sBody"></tbody>
-                            <tfoot id="sFoot"></tfoot>
-                        </table>
+
+                    <div class="col-2 d-flex align-items-end">
+                        <button class="btn btn-dark btn-sm w-100"
+                                onclick="renderSummary()">
+                            FILTER
+                        </button>
                     </div>
                 </div>
-            </div>
 
-            <div class="tab-pane fade" id="absTab">
-                <div class="card p-3">
-                    <div class="d-flex justify-content-end mb-2 no-print">
-                        <button class="btn btn-outline-dark btn-sm" onclick="window.print()">PRINT ABSENTEE LIST</button>
-                    </div>
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered align-middle table-sm">
+                        <thead class="table-dark">
+                        <tr>
+                            <th rowspan="2">Date</th>
+                            <th colspan="3" class="text-center">Registration</th>
+                            <th colspan="3" class="text-center">Attendance</th>
+                            <th colspan="3" class="text-center">Gender (M/W/O)</th>
+                            <th rowspan="2" class="no-print">Action</th>
+                        </tr>
 
-                    <div class="row g-2 mb-3">
-                        <div class="col-5"><label>From</label><input type="date" id="aS" class="form-control form-control-sm"></div>
-                        <div class="col-5"><label>To</label><input type="date" id="aE" class="form-control form-control-sm"></div>
-                        <div class="col-2 d-flex align-items-end"><button class="btn btn-dark btn-sm w-100" onclick="renderAbs()">FILTER</button></div>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="table table-hover table-bordered align-middle">
-                            <thead class="table-dark"><tr><th>Date</th><th>Name</th><th>Ticket</th><th>Type</th></tr></thead>
-                            <tbody id="aBody"></tbody>
-                        </table>
-                    </div>
+                        <tr>
+                            <th>Online</th>
+                            <th>Offline</th>
+                            <th>Total</th>
+                            <th>Online</th>
+                            <th>Offline</th>
+                            <th>Total</th>
+                            <th>Men</th>
+                            <th>Women</th>
+                            <th>Other</th>
+                        </tr>
+                        </thead>
+
+                        <tbody id="sBody"></tbody>
+                        <tfoot id="sFoot"></tfoot>
+                    </table>
                 </div>
             </div>
         </div>
+
+        <!-- ABSENTEE TAB -->
+        <div class="tab-pane fade" id="absTab">
+            <div class="card p-3">
+
+                <div class="d-flex justify-content-end mb-2 no-print">
+                    <button class="btn btn-outline-dark btn-sm"
+                            onclick="window.print()">
+                        PRINT ABSENTEE LIST
+                    </button>
+                </div>
+
+                <div class="row g-2 mb-3 no-print">
+                    <div class="col-5">
+                        <label>From</label>
+                        <input type="date"
+                               id="aS"
+                               class="form-control form-control-sm">
+                    </div>
+
+                    <div class="col-5">
+                        <label>To</label>
+                        <input type="date"
+                               id="aE"
+                               class="form-control form-control-sm">
+                    </div>
+
+                    <div class="col-2 d-flex align-items-end">
+                        <button class="btn btn-dark btn-sm w-100"
+                                onclick="renderAbs()">
+                            FILTER
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered align-middle">
+                        <thead class="table-dark">
+                        <tr>
+                            <th>Date</th>
+                            <th>Name</th>
+                            <th>Ticket</th>
+                            <th>Type</th>
+                        </tr>
+                        </thead>
+
+                        <tbody id="aBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        const URL = "https://script.google.com/macros/s/AKfycbzd4EP6Rsf5rfOUjCwiBAOWT9zklxaC1T-0wSt0GzsQdcxLoek0KTOlwCAiFC2iGfe6_A/exec";
-        let summaryData = [], absenteeData = [];
-        let currentEditDate = null;
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-        function getValue(obj, ...possibleKeys) {
-            for (let key of possibleKeys) {
-                if (obj[key] !== undefined) return obj[key];
-                let lowerKey = key.toLowerCase();
-                for (let k in obj) {
-                    if (k.toLowerCase() === lowerKey) return obj[k];
+<script>
+    /*
+     * Replace this with your deployed Apps Script /exec URL.
+     */
+    const URL = "https://script.google.com/macros/s/AKfycbyrRGnNgaW8HDWmnjv_kuazg2rqX_CB_q_hOOlQcY_PGwI2tTX5CL1UDfKjg1o8H-VLzA/exec";
+
+    let summaryData = [];
+    let absenteeData = [];
+    let currentEditDate = null;
+
+    function getValue(obj, ...possibleKeys) {
+        for (const key of possibleKeys) {
+            if (obj[key] !== undefined && obj[key] !== null) {
+                return obj[key];
+            }
+
+            const lowerKey = key.toLowerCase();
+
+            for (const actualKey in obj) {
+                if (actualKey.toLowerCase() === lowerKey) {
+                    return obj[actualKey];
                 }
             }
-            return 0;
         }
 
-        function setEditMode(date) {
-            currentEditDate = date;
-            const note = document.getElementById('editModeNote');
-            const btn = document.getElementById('subBtn');
+        return "";
+    }
 
-            if (date) {
-                note.style.display = 'block';
-                btn.innerText = 'UPDATE RECORD';
-            } else {
-                note.style.display = 'none';
-                btn.innerText = 'SAVE DAILY RECORD';
-            }
+    function getDateOnly(value) {
+        if (!value) return "";
+
+        const text = String(value);
+
+        if (/^\d{4}-\d{2}-\d{2}/.test(text)) {
+            return text.substring(0, 10);
         }
 
-        function resetForm() {
-            document.getElementById('trekForm').reset();
-            document.getElementById('absArea').innerHTML = '';
-            document.getElementById('dupWarn').style.display = 'none';
-            document.getElementById('gErr').style.display = 'none';
-            document.getElementById('stReg').innerText = '0';
-            document.getElementById('stAtt').innerText = '0';
-            document.getElementById('stAbs').innerText = '0';
-            setEditMode(null);
-            currentEditDate = null;
+        const date = new Date(value);
+
+        if (isNaN(date.getTime())) return "";
+
+        return date.toISOString().substring(0, 10);
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function setEditMode(date) {
+        currentEditDate = date || null;
+
+        const note = document.getElementById("editModeNote");
+        const button = document.getElementById("subBtn");
+
+        if (currentEditDate) {
+            note.style.display = "block";
+            button.innerText = "UPDATE RECORD";
+        } else {
+            note.style.display = "none";
+            button.innerText = "SAVE DAILY RECORD";
         }
+    }
 
-        async function loadData() {
-            try {
-                const r = await fetch(URL);
-                const d = await r.json();
-                summaryData = d.summary || [];
-                absenteeData = d.absentees || [];
+    function resetForm() {
+        document.getElementById("trekForm").reset();
+        document.getElementById("absArea").innerHTML = "";
 
-                console.log("Summary Data:", summaryData);
-                console.log("Absentee Data:", absenteeData);
+        document.getElementById("dupWarn").style.display = "none";
+        document.getElementById("gErr").style.display = "none";
 
-                if (summaryData.length > 0) {
-                    const debugDiv = document.getElementById('debugInfo');
-                    debugDiv.innerHTML = `<strong>✓ Data Loaded:</strong> ${summaryData.length} summary records found. Keys: ${Object.keys(summaryData[0]).join(', ')}`;
-                    debugDiv.style.display = 'block';
-                }
+        document.getElementById("stReg").innerText = "0";
+        document.getElementById("stAtt").innerText = "0";
+        document.getElementById("stAbs").innerText = "0";
 
-                renderSummary();
-                renderAbs();
-            } catch(e) {
-                console.error("Data Load Error:", e);
-                document.getElementById('debugInfo').innerHTML = `<strong>✗ Error:</strong> ${e.message}`;
-                document.getElementById('debugInfo').style.display = 'block';
-            }
-        }
-
-        function checkDup() {
-            const sel = document.getElementById('tDate').value;
-            if (!sel) return;
-
-            const exists = summaryData.some(r => {
-                const dateVal = getValue(r, 'Date', 'date');
-                if (!dateVal) return false;
-                const rowDate = dateVal.split('T')[0];
-                return rowDate === sel && sel !== currentEditDate;
-            });
-
-            document.getElementById('dupWarn').style.display = exists ? 'block' : 'none';
-        }
-
-        function loadRecordIntoForm(date) {
-            const record = summaryData.find(r => {
-                const d = getValue(r, 'Date', 'date');
-                return d && d.split('T')[0] === date;
-            });
-
-            if (!record) return;
-
-            document.getElementById('tDate').value = date;
-            document.getElementById('onR').value = +getValue(record, 'onlineReg', 'Online Reg', 'online reg') || 0;
-            document.getElementById('offR').value = +getValue(record, 'offlineReg', 'Offline Reg', 'offline reg') || 0;
-            document.getElementById('onA').value = +getValue(record, 'onlineTurnout', 'Online Turnout', 'online turnout', 'Online Attd') || 0;
-            document.getElementById('offA').value = +getValue(record, 'offlineTurnout', 'Offline Turnout', 'offline turnout', 'Offline Attd') || 0;
-            document.getElementById('men').value = +getValue(record, 'men', 'Men') || 0;
-            document.getElementById('women').value = +getValue(record, 'women', 'Women') || 0;
-            document.getElementById('other').value = +getValue(record, 'other', 'Other') || 0;
-
-            document.querySelectorAll('.calc, .g-calc').forEach(el => {
-                el.dispatchEvent(new Event('input'));
-            });
-
-            const matchingAbs = absenteeData.filter(r => {
-                const d = getValue(r, 'Date', 'date');
-                return d && d.split('T')[0] === date;
-            });
-
-            const area = document.getElementById('absArea');
-            area.innerHTML = '';
-
-            if (matchingAbs.length > 0) {
-                matchingAbs.forEach(item => {
-                    const nameVal = (getValue(item, 'Name', 'name') || '').toString().replace(/"/g, '&quot;');
-                    const ticketVal = (getValue(item, 'Ticket No', 'ticket no', 'ticket', 'Ticket') || '').toString().replace(/"/g, '&quot;');
-                    const typeVal = getValue(item, 'Type', 'type') || 'Online';
-
-                    area.innerHTML += `
-                        <div class="absentee-row row g-1">
-                            <div class="col-5"><input type="text" class="form-control form-control-sm a-n" value="${nameVal}"></div>
-                            <div class="col-4"><input type="text" class="form-control form-control-sm a-t" value="${ticketVal}"></div>
-                            <div class="col-3">
-                                <select class="form-select form-select-sm a-y">
-                                    <option value="Online" ${typeVal === 'Online' ? 'selected' : ''}>On</option>
-                                    <option value="Offline" ${typeVal === 'Offline' ? 'selected' : ''}>Off</option>
-                                </select>
-                            </div>
-                        </div>
-                    `;
-                });
-            }
-
-            setEditMode(date);
-            checkDup();
-        }
-
-        async function deleteRecord(date) {
-            const ok = confirm("Delete this record? This will also delete all absentee rows for this date.");
-            if (!ok) return;
-
-            try {
-                const response = await fetch(URL, {
-                    method: 'POST',
-                    mode: 'cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'delete',
-                        date: date
-                    })
-                });
-
-                const result = await response.json();
-
-                if (result.result === 'deleted') {
-                    alert("Record deleted successfully.");
-                    resetForm();
-                    loadData();
-                } else {
-                    alert("Delete failed: " + (result.error || "Unknown error"));
-                }
-            } catch (e) {
-                alert("Delete error: " + e.message);
-            }
-        }
-
-        document.querySelectorAll('.calc, .g-calc').forEach(el => {
-            el.addEventListener('input', () => {
-                const tr = (+document.getElementById('onR').value) + (+document.getElementById('offR').value);
-                const ta = (+document.getElementById('onA').value) + (+document.getElementById('offA').value);
-                const abs = tr - ta;
-                document.getElementById('stReg').innerText = tr;
-                document.getElementById('stAtt').innerText = ta;
-                document.getElementById('stAbs').innerText = abs > 0 ? abs : 0;
-
-                const m = +document.getElementById('men').value, w = +document.getElementById('women').value, o = +document.getElementById('other').value;
-                const err = (m+w+o !== ta && ta > 0);
-                document.getElementById('gErr').style.display = err ? 'block' : 'none';
-                document.querySelectorAll('.g-calc').forEach(input => err ? input.classList.add('is-invalid') : input.classList.remove('is-invalid'));
-
-                if (el.classList.contains('calc')) {
-                    const area = document.getElementById('absArea');
-                    const existingRows = area.querySelectorAll('.absentee-row');
-
-                    if (abs > 0) {
-                        if (existingRows.length === 0) {
-                            area.innerHTML = '<label class="text-danger mt-3 mb-2">Detailed Absentee List</label>';
-                            for (let i = 0; i < abs; i++) {
-                                area.innerHTML += `<div class="absentee-row row g-1">
-                                    <div class="col-5"><input type="text" class="form-control form-control-sm a-n" placeholder="Name"></div>
-                                    <div class="col-4"><input type="text" class="form-control form-control-sm a-t" placeholder="Ticket"></div>
-                                    <div class="col-3"><select class="form-select form-select-sm a-y"><option value="Online">On</option><option value="Offline">Off</option></select></div>
-                                </div>`;
-                            }
-                        }
-                    } else {
-                        area.innerHTML = '';
-                    }
-                }
-            });
+        document.querySelectorAll(".g-calc").forEach(input => {
+            input.classList.remove("is-invalid");
         });
 
-        document.getElementById('trekForm').onsubmit = async (e) => {
-            e.preventDefault();
+        setEditMode(null);
+    }
 
-            const ta = +document.getElementById('stAtt').innerText;
-            const gt = (+document.getElementById('men').value) + (+document.getElementById('women').value) + (+document.getElementById('other').value);
+    async function loadData() {
+        try {
+            const response = await fetch(URL);
+            const data = await response.json();
 
-            if (gt !== ta) {
-                alert("HARD VALIDATION ERROR: The total of Men, Women, and Others (" + gt + ") does not match the Total Attended (" + ta + ").");
-                return;
+            summaryData = data.summary || [];
+            absenteeData = data.absentees || [];
+
+            console.log("Summary Data:", summaryData);
+            console.log("Absentee Data:", absenteeData);
+
+            const debugDiv = document.getElementById("debugInfo");
+
+            if (summaryData.length > 0) {
+                debugDiv.innerHTML =
+                    "<strong>✓ Data Loaded:</strong> " +
+                    summaryData.length +
+                    " summary records found.";
+
+                debugDiv.style.display = "block";
+            } else {
+                debugDiv.style.display = "none";
             }
 
-            const absenteeRows = Array.from(document.querySelectorAll('.absentee-row'));
+            renderSummary();
+            renderAbs();
 
-            for (const row of absenteeRows) {
-                const name = row.querySelector('.a-n').value.trim();
-                const ticket = row.querySelector('.a-t').value.trim();
+        } catch (error) {
+            console.error("Data Load Error:", error);
 
-                const onlyOneFieldFilled =
-                    (name !== '' && ticket === '') ||
-                    (name === '' && ticket !== '');
+            const debugDiv = document.getElementById("debugInfo");
+            debugDiv.innerHTML =
+                "<strong>✗ Error:</strong> " + escapeHtml(error.message);
 
-                if (onlyOneFieldFilled) {
-                    alert("Please enter both the absentee name and ticket number, or leave the entire row blank.");
-                    return;
-                }
+            debugDiv.style.display = "block";
+        }
+    }
+
+    function checkDup() {
+        const selectedDate = document.getElementById("tDate").value;
+
+        if (!selectedDate) {
+            document.getElementById("dupWarn").style.display = "none";
+            return;
+        }
+
+        const exists = summaryData.some(record => {
+            const recordDate = getDateOnly(getValue(record, "Date", "date"));
+
+            return recordDate === selectedDate &&
+                   recordDate !== currentEditDate;
+        });
+
+        document.getElementById("dupWarn").style.display =
+            exists ? "block" : "none";
+    }
+
+    function updateStatistics() {
+        const onlineReg = Number(document.getElementById("onR").value) || 0;
+        const offlineReg = Number(document.getElementById("offR").value) || 0;
+        const onlineAtt = Number(document.getElementById("onA").value) || 0;
+        const offlineAtt = Number(document.getElementById("offA").value) || 0;
+
+        const totalReg = onlineReg + offlineReg;
+        const totalAtt = onlineAtt + offlineAtt;
+        const absenteeCount = Math.max(totalReg - totalAtt, 0);
+
+        document.getElementById("stReg").innerText = totalReg;
+        document.getElementById("stAtt").innerText = totalAtt;
+        document.getElementById("stAbs").innerText = absenteeCount;
+
+        const men = Number(document.getElementById("men").value) || 0;
+        const women = Number(document.getElementById("women").value) || 0;
+        const other = Number(document.getElementById("other").value) || 0;
+
+        const genderError =
+            totalAtt > 0 && men + women + other !== totalAtt;
+
+        document.getElementById("gErr").style.display =
+            genderError ? "block" : "none";
+
+        document.querySelectorAll(".g-calc").forEach(input => {
+            if (genderError) {
+                input.classList.add("is-invalid");
+            } else {
+                input.classList.remove("is-invalid");
             }
+        });
 
-            const btn = document.getElementById('subBtn');
-            btn.disabled = true;
-            btn.innerText = "Transmitting Data...";
+        return {
+            totalReg,
+            totalAtt,
+            absenteeCount
+        };
+    }
 
-            const payload = {
-                action: 'save',
-                date: document.getElementById('tDate').value,
-                onlineReg: document.getElementById('onR').value,
-                offlineReg: document.getElementById('offR').value,
-                totalReg: document.getElementById('stReg').innerText,
-                onlineTurnout: document.getElementById('onA').value,
-                offlineTurnout: document.getElementById('offA').value,
-                totalTurnout: ta,
-                men: document.getElementById('men').value,
-                women: document.getElementById('women').value,
-                other: document.getElementById('other').value,
-                absenteeList: absenteeRows
-                    .map(r => ({
-                        name: r.querySelector('.a-n').value.trim(),
-                        ticket: r.querySelector('.a-t').value.trim(),
-                        type: r.querySelector('.a-y').value
-                    }))
-                    .filter(p => p.name !== '' && p.ticket !== '')
+    function updateAbsenteeRows(absenteeCount) {
+        const area = document.getElementById("absArea");
+
+        const oldRows = Array.from(
+            area.querySelectorAll(".absentee-row")
+        ).map(row => ({
+            name: row.querySelector(".a-n").value,
+            ticket: row.querySelector(".a-t").value,
+            type: row.querySelector(".a-y").value
+        }));
+
+        area.innerHTML = "";
+
+        if (absenteeCount <= 0) {
+            return;
+        }
+
+        area.innerHTML =
+            '<label class="text-danger mt-3 mb-2 d-block">' +
+            'Detailed Absentee List (Optional)' +
+            '</label>' +
+            '<small class="text-muted d-block mb-2">' +
+            'You may leave all absentee rows blank.' +
+            '</small>';
+
+        for (let i = 0; i < absenteeCount; i++) {
+            const old = oldRows[i] || {
+                name: "",
+                ticket: "",
+                type: "Online"
             };
 
-            try {
-                const res = await fetch(URL, {
-                    method: 'POST',
-                    mode: 'cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+            area.innerHTML += `
+                <div class="absentee-row row g-1">
+                    <div class="col-5">
+                        <input type="text"
+                               class="form-control form-control-sm a-n"
+                               placeholder="Name"
+                               value="${escapeHtml(old.name)}">
+                    </div>
 
-                const result = await res.json();
+                    <div class="col-4">
+                        <input type="text"
+                               class="form-control form-control-sm a-t"
+                               placeholder="Ticket"
+                               value="${escapeHtml(old.ticket)}">
+                    </div>
 
-                if (result && result.error) {
-                    throw new Error(result.error);
-                }
+                    <div class="col-3">
+                        <select class="form-select form-select-sm a-y">
+                            <option value="Online"
+                                ${old.type === "Online" ? "selected" : ""}>
+                                On
+                            </option>
 
-                alert(currentEditDate ? "Daily record updated successfully!" : "Data successfully saved and sheet updated!");
-                resetForm();
-                await loadData();
-            } catch (e) {
-                console.error("Submit Error:", e);
-                alert("Connectivity Error. Please try again.");
-                btn.disabled = false;
-                btn.innerText = currentEditDate ? "UPDATE RECORD" : "SAVE DAILY RECORD";
-            }
-        };
+                            <option value="Offline"
+                                ${old.type === "Offline" ? "selected" : ""}>
+                                Off
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            `;
+        }
+    }
 
-        function renderSummary() {
-            const start = document.getElementById('sS').value ? new Date(document.getElementById('sS').value).setHours(0,0,0,0) : 0;
-            const end = document.getElementById('sE').value ? new Date(document.getElementById('sE').value).setHours(23,59,59,999) : 9e12;
-            let totalOnReg=0, totalOffReg=0, totalReg=0, totalOnAtt=0, totalOffAtt=0, totalAtt=0, totalM=0, totalW=0, totalO=0;
+    function calculateAndRenderRows() {
+        const result = updateStatistics();
+        updateAbsenteeRows(result.absenteeCount);
+    }
 
-            const filtered = summaryData.filter(r => {
-                const dateVal = getValue(r, 'Date', 'date');
-                if (!dateVal) return false;
-                const d = new Date(dateVal).getTime();
-                return d >= start && d <= end;
+    function loadRecordIntoForm(date) {
+        const record = summaryData.find(item => {
+            return getDateOnly(getValue(item, "Date", "date")) === date;
+        });
+
+        if (!record) {
+            alert("The selected record could not be found.");
+            return;
+        }
+
+        document.getElementById("tDate").value = date;
+
+        document.getElementById("onR").value =
+            Number(getValue(record, "onlineReg", "Online Reg", "online reg")) || 0;
+
+        document.getElementById("offR").value =
+            Number(getValue(record, "offlineReg", "Offline Reg", "offline reg")) || 0;
+
+        document.getElementById("onA").value =
+            Number(getValue(
+                record,
+                "onlineTurnout",
+                "Online Turnout",
+                "online turnout",
+                "Online Attd"
+            )) || 0;
+
+        document.getElementById("offA").value =
+            Number(getValue(
+                record,
+                "offlineTurnout",
+                "Offline Turnout",
+                "offline turnout",
+                "Offline Attd"
+            )) || 0;
+
+        document.getElementById("men").value =
+            Number(getValue(record, "men", "Men")) || 0;
+
+        document.getElementById("women").value =
+            Number(getValue(record, "women", "Women")) || 0;
+
+        document.getElementById("other").value =
+            Number(getValue(record, "other", "Other")) || 0;
+
+        const stats = updateStatistics();
+        updateAbsenteeRows(stats.absenteeCount);
+
+        const matchingAbsentees = absenteeData.filter(item => {
+            return getDateOnly(getValue(item, "Date", "date")) === date;
+        });
+
+        const rows = document.querySelectorAll(".absentee-row");
+
+        matchingAbsentees.forEach((item, index) => {
+            if (!rows[index]) return;
+
+            rows[index].querySelector(".a-n").value =
+                getValue(item, "Name", "name") || "";
+
+            rows[index].querySelector(".a-t").value =
+                getValue(
+                    item,
+                    "Ticket No",
+                    "ticket no",
+                    "ticket",
+                    "Ticket"
+                ) || "";
+
+            rows[index].querySelector(".a-y").value =
+                getValue(item, "Type", "type") || "Online";
+        });
+
+        setEditMode(date);
+        checkDup();
+
+        const entryTabButton =
+            document.querySelector('[data-bs-target="#entryTab"]');
+
+        bootstrap.Tab
+            .getOrCreateInstance(entryTabButton)
+            .show();
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    }
+
+    async function sendPostRequest(payload) {
+        /*
+         * Important:
+         * no-cors avoids the Apps Script CORS preflight problem.
+         * The browser cannot read the response, so this function only
+         * confirms that the request was sent.
+         */
+        await fetch(URL, {
+            method: "POST",
+            mode: "no-cors",
+            body: JSON.stringify(payload)
+        });
+
+        await new Promise(resolve => setTimeout(resolve, 1200));
+    }
+
+    async function deleteRecord(date) {
+        const confirmed = confirm(
+            "Delete this record?\n\n" +
+            "This will also delete all absentee details for " +
+            date + "."
+        );
+
+        if (!confirmed) return;
+
+        try {
+            await sendPostRequest({
+                action: "delete",
+                date: date
             });
 
-            document.getElementById('sBody').innerHTML = filtered.map(r => {
-                const onReg = +getValue(r, 'onlineReg', 'Online Reg', 'online reg') || 0;
-                const offReg = +getValue(r, 'offlineReg', 'Offline Reg', 'offline reg') || 0;
-                const totReg = +getValue(r, 'totalReg', 'Total Reg', 'total reg') || 0;
-                const onAtt = +getValue(r, 'onlineTurnout', 'Online Turnout', 'online turnout', 'Online Attd') || 0;
-                const offAtt = +getValue(r, 'offlineTurnout', 'Offline Turnout', 'offline turnout', 'Offline Attd') || 0;
-                const totAtt = +getValue(r, 'totalTurnout', 'Total Turnout', 'total turnout', 'Total Attd') || 0;
-                const m = +getValue(r, 'men', 'Men') || 0;
-                const w = +getValue(r, 'women', 'Women') || 0;
-                const o = +getValue(r, 'other', 'Other') || 0;
+            alert("Delete request sent successfully.");
 
-                totalOnReg += onReg;
-                totalOffReg += offReg;
-                totalReg += totReg;
-                totalOnAtt += onAtt;
-                totalOffAtt += offAtt;
-                totalAtt += totAtt;
-                totalM += m;
-                totalW += w;
-                totalO += o;
+            resetForm();
+            await loadData();
 
-                const dateVal = getValue(r, 'Date', 'date');
-                const dateStr = dateVal ? new Date(dateVal).toLocaleDateString('en-GB') : '';
+        } catch (error) {
+            console.error("Delete Error:", error);
+            alert("Delete request could not be sent. Please try again.");
+        }
+    }
+
+    document.querySelectorAll(".calc").forEach(input => {
+        input.addEventListener("input", calculateAndRenderRows);
+    });
+
+    document.querySelectorAll(".g-calc").forEach(input => {
+        input.addEventListener("input", updateStatistics);
+    });
+
+    document.getElementById("trekForm").addEventListener("submit", async function(event) {
+        event.preventDefault();
+
+        const stats = updateStatistics();
+
+        if (stats.totalAtt > stats.totalReg) {
+            alert("Total attended cannot be greater than total registration.");
+            return;
+        }
+
+        const men = Number(document.getElementById("men").value) || 0;
+        const women = Number(document.getElementById("women").value) || 0;
+        const other = Number(document.getElementById("other").value) || 0;
+
+        if (men + women + other !== stats.totalAtt) {
+            alert(
+                "Men + Women + Other must equal Total Attended."
+            );
+            return;
+        }
+
+        const absenteeRows = Array.from(
+            document.querySelectorAll(".absentee-row")
+        );
+
+        for (const row of absenteeRows) {
+            const name = row.querySelector(".a-n").value.trim();
+            const ticket = row.querySelector(".a-t").value.trim();
+
+            const partiallyFilled =
+                (name !== "" && ticket === "") ||
+                (name === "" && ticket !== "");
+
+            if (partiallyFilled) {
+                alert(
+                    "Please enter both the absentee name and ticket number, " +
+                    "or leave the entire row blank."
+                );
+                return;
+            }
+        }
+
+        const absenteeList = absenteeRows
+            .map(row => ({
+                name: row.querySelector(".a-n").value.trim(),
+                ticket: row.querySelector(".a-t").value.trim(),
+                type: row.querySelector(".a-y").value
+            }))
+            .filter(person =>
+                person.name !== "" && person.ticket !== ""
+            );
+
+        const button = document.getElementById("subBtn");
+        const wasEditing = Boolean(currentEditDate);
+
+        button.disabled = true;
+        button.innerText = "Saving...";
+
+        const payload = {
+            action: "save",
+            date: document.getElementById("tDate").value,
+            onlineReg: document.getElementById("onR").value,
+            offlineReg: document.getElementById("offR").value,
+            totalReg: stats.totalReg,
+            onlineTurnout: document.getElementById("onA").value,
+            offlineTurnout: document.getElementById("offA").value,
+            totalTurnout: stats.totalAtt,
+            men: men,
+            women: women,
+            other: other,
+            absenteeList: absenteeList
+        };
+
+        try {
+            await sendPostRequest(payload);
+
+            alert(
+                wasEditing
+                    ? "Daily record updated successfully."
+                    : "Data saved successfully."
+            );
+
+            resetForm();
+            await loadData();
+
+        } catch (error) {
+            console.error("Save Error:", error);
+
+            alert(
+                "The request could not be sent. Please check your internet connection."
+            );
+
+            button.disabled = false;
+            button.innerText =
+                wasEditing ? "UPDATE RECORD" : "SAVE DAILY RECORD";
+        }
+    });
+
+    function renderSummary() {
+        const fromValue = document.getElementById("sS").value;
+        const toValue = document.getElementById("sE").value;
+
+        const filtered = summaryData.filter(record => {
+            const date = getDateOnly(
+                getValue(record, "Date", "date")
+            );
+
+            if (!date) return false;
+            if (fromValue && date < fromValue) return false;
+            if (toValue && date > toValue) return false;
+
+            return true;
+        });
+
+        let totalOnlineReg = 0;
+        let totalOfflineReg = 0;
+        let totalReg = 0;
+        let totalOnlineAtt = 0;
+        let totalOfflineAtt = 0;
+        let totalAtt = 0;
+        let totalMen = 0;
+        let totalWomen = 0;
+        let totalOther = 0;
+
+        document.getElementById("sBody").innerHTML =
+            filtered.map(record => {
+                const date = getDateOnly(
+                    getValue(record, "Date", "date")
+                );
+
+                const onlineReg = Number(getValue(
+                    record,
+                    "onlineReg",
+                    "Online Reg",
+                    "online reg"
+                )) || 0;
+
+                const offlineReg = Number(getValue(
+                    record,
+                    "offlineReg",
+                    "Offline Reg",
+                    "offline reg"
+                )) || 0;
+
+                const totalRegistration = Number(getValue(
+                    record,
+                    "totalReg",
+                    "Total Reg",
+                    "total reg"
+                )) || 0;
+
+                const onlineAtt = Number(getValue(
+                    record,
+                    "onlineTurnout",
+                    "Online Turnout",
+                    "online turnout",
+                    "Online Attd"
+                )) || 0;
+
+                const offlineAtt = Number(getValue(
+                    record,
+                    "offlineTurnout",
+                    "Offline Turnout",
+                    "offline turnout",
+                    "Offline Attd"
+                )) || 0;
+
+                const totalAttendance = Number(getValue(
+                    record,
+                    "totalTurnout",
+                    "Total Turnout",
+                    "total turnout",
+                    "Total Attd"
+                )) || 0;
+
+                const men = Number(getValue(record, "men", "Men")) || 0;
+                const women = Number(getValue(record, "women", "Women")) || 0;
+                const other = Number(getValue(record, "other", "Other")) || 0;
+
+                totalOnlineReg += onlineReg;
+                totalOfflineReg += offlineReg;
+                totalReg += totalRegistration;
+                totalOnlineAtt += onlineAtt;
+                totalOfflineAtt += offlineAtt;
+                totalAtt += totalAttendance;
+                totalMen += men;
+                totalWomen += women;
+                totalOther += other;
 
                 return `
                     <tr>
-                        <td>${dateStr}</td>
-                        <td>${onReg}</td>
-                        <td>${offReg}</td>
-                        <td>${totReg}</td>
-                        <td>${onAtt}</td>
-                        <td>${offAtt}</td>
-                        <td>${totAtt}</td>
-                        <td>${m}</td>
-                        <td>${w}</td>
-                        <td>${o}</td>
-                        <td>
-                            <button class="btn btn-sm btn-primary me-1" onclick="loadRecordIntoForm('${dateVal.split('T')[0]}')">Edit</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteRecord('${dateVal.split('T')[0]}')">Delete</button>
+                        <td>${escapeHtml(date)}</td>
+                        <td>${onlineReg}</td>
+                        <td>${offlineReg}</td>
+                        <td>${totalRegistration}</td>
+                        <td>${onlineAtt}</td>
+                        <td>${offlineAtt}</td>
+                        <td>${totalAttendance}</td>
+                        <td>${men}</td>
+                        <td>${women}</td>
+                        <td>${other}</td>
+                        <td class="no-print text-nowrap">
+                            <button class="btn btn-primary btn-sm"
+                                    onclick="loadRecordIntoForm('${date}')">
+                                Edit
+                            </button>
+
+                            <button class="btn btn-danger btn-sm"
+                                    onclick="deleteRecord('${date}')">
+                                Delete
+                            </button>
                         </td>
                     </tr>
                 `;
-            }).join('');
+            }).join("");
 
-            document.getElementById('sFoot').innerHTML = `
-                <tr class="summary-row">
-                    <td>TOTAL</td>
-                    <td>${totalOnReg}</td>
-                    <td>${totalOffReg}</td>
-                    <td>${totalReg}</td>
-                    <td>${totalOnAtt}</td>
-                    <td>${totalOffAtt}</td>
-                    <td>${totalAtt}</td>
-                    <td>${totalM}</td>
-                    <td>${totalW}</td>
-                    <td>${totalO}</td>
-                    <td></td>
-                </tr>
-            `;
-        }
+        document.getElementById("sFoot").innerHTML = `
+            <tr class="summary-row">
+                <td>TOTAL</td>
+                <td>${totalOnlineReg}</td>
+                <td>${totalOfflineReg}</td>
+                <td>${totalReg}</td>
+                <td>${totalOnlineAtt}</td>
+                <td>${totalOfflineAtt}</td>
+                <td>${totalAtt}</td>
+                <td>${totalMen}</td>
+                <td>${totalWomen}</td>
+                <td>${totalOther}</td>
+                <td class="no-print"></td>
+            </tr>
+        `;
+    }
 
-        function renderAbs() {
-            const start = document.getElementById('aS').value ? new Date(document.getElementById('aS').value).setHours(0,0,0,0) : 0;
-            const end = document.getElementById('aE').value ? new Date(document.getElementById('aE').value).setHours(23,59,59,999) : 9e12;
+    function renderAbs() {
+        const fromValue = document.getElementById("aS").value;
+        const toValue = document.getElementById("aE").value;
 
-            const filtered = absenteeData.filter(r => {
-                const dateVal = getValue(r, 'Date', 'date');
-                if (!dateVal) return false;
-                const d = new Date(dateVal).getTime();
-                return d >= start && d <= end;
-            });
+        const filtered = absenteeData.filter(record => {
+            const date = getDateOnly(
+                getValue(record, "Date", "date")
+            );
 
-            document.getElementById('aBody').innerHTML = filtered.map(r => {
-                const dateVal = getValue(r, 'Date', 'date');
-                const name = getValue(r, 'Name', 'name');
-                const ticket = getValue(r, 'Ticket No', 'ticket no', 'ticket', 'Ticket');
-                const type = getValue(r, 'Type', 'type');
-                return `<tr><td>${new Date(dateVal).toLocaleDateString('en-GB')}</td><td>${name}</td><td>${ticket}</td><td>${type}</td></tr>`;
-            }).join('');
-        }
+            if (!date) return false;
+            if (fromValue && date < fromValue) return false;
+            if (toValue && date > toValue) return false;
 
-        window.onload = () => loadData();
-    </script>
+            return true;
+        });
+
+        document.getElementById("aBody").innerHTML =
+            filtered.map(record => {
+                const date = getDateOnly(
+                    getValue(record, "Date", "date")
+                );
+
+                const name = getValue(record, "Name", "name");
+                const ticket = getValue(
+                    record,
+                    "Ticket No",
+                    "ticket no",
+                    "ticket",
+                    "Ticket"
+                );
+                const type = getValue(record, "Type", "type");
+
+                return `
+                    <tr>
+                        <td>${escapeHtml(date)}</td>
+                        <td>${escapeHtml(name)}</td>
+                        <td>${escapeHtml(ticket)}</td>
+                        <td>${escapeHtml(type)}</td>
+                    </tr>
+                `;
+            }).join("");
+    }
+
+    window.addEventListener("load", function() {
+        loadData();
+        updateStatistics();
+    });
+</script>
 </body>
 </html>
