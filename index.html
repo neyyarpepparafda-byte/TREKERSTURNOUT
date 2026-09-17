@@ -443,10 +443,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    /*
-     * Replace this with your deployed Apps Script /exec URL.
-     */
-    const URL = "https://script.google.com/macros/s/AKfycbwQoonmcsrm-zrGwJ8KO-kirmGcHioGtv6dXgzlnT8kKeEMZ-gQJcliqh162qriawpBZw/exec";
+    const URL = "https://script.google.com/macros/s/AKfycbwMAU_YhXj8PTt8JZa0rd9Ek4-KUGayT2b0laZHBky5bebHjbeR-xg7bbDy9C0Ze3Ezkw/exec";
 
     let summaryData = [];
     let absenteeData = [];
@@ -481,9 +478,28 @@
 
         const date = new Date(value);
 
-        if (isNaN(date.getTime())) return "";
+        if (isNaN(date.getTime())) {
+            return "";
+        }
 
-        return date.toISOString().substring(0, 10);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+
+        return `${year}-${month}-${day}`;
+    }
+
+    function displayDate(dateValue) {
+        if (!dateValue) return "";
+
+        const dateText = String(dateValue).substring(0, 10);
+        const parts = dateText.split("-");
+
+        if (parts.length !== 3) {
+            return dateText;
+        }
+
+        return parts[2] + "/" + parts[1] + "/" + parts[0];
     }
 
     function escapeHtml(value) {
@@ -525,12 +541,19 @@
             input.classList.remove("is-invalid");
         });
 
+        const button = document.getElementById("subBtn");
+        button.disabled = false;
+
         setEditMode(null);
     }
 
     async function loadData() {
         try {
-            const response = await fetch(URL);
+            const response = await fetch(URL + "?refresh=" + Date.now(), {
+                method: "GET",
+                cache: "no-store"
+            });
+
             const data = await response.json();
 
             summaryData = data.summary || [];
@@ -603,8 +626,7 @@
         const women = Number(document.getElementById("women").value) || 0;
         const other = Number(document.getElementById("other").value) || 0;
 
-        const genderError =
-            totalAtt > 0 && men + women + other !== totalAtt;
+        const genderError = totalAtt > 0 && (men + women + other !== totalAtt);
 
         document.getElementById("gErr").style.display =
             genderError ? "block" : "none";
@@ -674,15 +696,8 @@
 
                     <div class="col-3">
                         <select class="form-select form-select-sm a-y">
-                            <option value="Online"
-                                ${old.type === "Online" ? "selected" : ""}>
-                                On
-                            </option>
-
-                            <option value="Offline"
-                                ${old.type === "Offline" ? "selected" : ""}>
-                                Off
-                            </option>
+                            <option value="Online" ${old.type === "Online" ? "selected" : ""}>On</option>
+                            <option value="Offline" ${old.type === "Offline" ? "selected" : ""}>Off</option>
                         </select>
                     </div>
                 </div>
@@ -771,12 +786,11 @@
         setEditMode(date);
         checkDup();
 
-        const entryTabButton =
-            document.querySelector('[data-bs-target="#entryTab"]');
+        const entryTabButton = document.querySelector('[data-bs-target="#entryTab"]');
 
-        bootstrap.Tab
-            .getOrCreateInstance(entryTabButton)
-            .show();
+        if (entryTabButton && window.bootstrap) {
+            bootstrap.Tab.getOrCreateInstance(entryTabButton).show();
+        }
 
         window.scrollTo({
             top: 0,
@@ -785,12 +799,6 @@
     }
 
     async function sendPostRequest(payload) {
-        /*
-         * Important:
-         * no-cors avoids the Apps Script CORS preflight problem.
-         * The browser cannot read the response, so this function only
-         * confirms that the request was sent.
-         */
         await fetch(URL, {
             method: "POST",
             mode: "no-cors",
@@ -802,9 +810,10 @@
 
     async function deleteRecord(date) {
         const confirmed = confirm(
-            "Delete this record?\n\n" +
-            "This will also delete all absentee details for " +
-            date + "."
+            "Delete the record for " +
+            displayDate(date) +
+            "?\n\n" +
+            "This will also delete all absentee details for this date."
         );
 
         if (!confirmed) return;
@@ -815,7 +824,7 @@
                 date: date
             });
 
-            alert("Delete request sent successfully.");
+            alert("Record deleted successfully.");
 
             resetForm();
             await loadData();
@@ -837,6 +846,36 @@
     document.getElementById("trekForm").addEventListener("submit", async function(event) {
         event.preventDefault();
 
+        const selectedDate = document.getElementById("tDate").value;
+
+        if (!selectedDate) {
+            alert("Please select a date.");
+            return;
+        }
+
+        const duplicateExists = summaryData.some(record => {
+            const recordDate = getDateOnly(getValue(record, "Date", "date"));
+            return recordDate === selectedDate &&
+                   recordDate !== currentEditDate;
+        });
+
+        if (!currentEditDate && duplicateExists) {
+            alert("A record already exists for this date. Use Edit to change it.");
+            return;
+        }
+
+        if (currentEditDate && selectedDate !== currentEditDate) {
+            const changedDateExists = summaryData.some(record => {
+                const recordDate = getDateOnly(getValue(record, "Date", "date"));
+                return recordDate === selectedDate;
+            });
+
+            if (changedDateExists) {
+                alert("This date already exists. Please choose a different date.");
+                return;
+            }
+        }
+
         const stats = updateStatistics();
 
         if (stats.totalAtt > stats.totalReg) {
@@ -849,15 +888,11 @@
         const other = Number(document.getElementById("other").value) || 0;
 
         if (men + women + other !== stats.totalAtt) {
-            alert(
-                "Men + Women + Other must equal Total Attended."
-            );
+            alert("Men + Women + Other must equal Total Attended.");
             return;
         }
 
-        const absenteeRows = Array.from(
-            document.querySelectorAll(".absentee-row")
-        );
+        const absenteeRows = Array.from(document.querySelectorAll(".absentee-row"));
 
         for (const row of absenteeRows) {
             const name = row.querySelector(".a-n").value.trim();
@@ -868,10 +903,7 @@
                 (name === "" && ticket !== "");
 
             if (partiallyFilled) {
-                alert(
-                    "Please enter both the absentee name and ticket number, " +
-                    "or leave the entire row blank."
-                );
+                alert("Please enter both the absentee name and ticket number, or leave the entire row blank.");
                 return;
             }
         }
@@ -882,19 +914,17 @@
                 ticket: row.querySelector(".a-t").value.trim(),
                 type: row.querySelector(".a-y").value
             }))
-            .filter(person =>
-                person.name !== "" && person.ticket !== ""
-            );
+            .filter(person => person.name !== "" && person.ticket !== "");
 
         const button = document.getElementById("subBtn");
         const wasEditing = Boolean(currentEditDate);
 
         button.disabled = true;
-        button.innerText = "Saving...";
+        button.innerText = wasEditing ? "Updating..." : "Saving...";
 
         const payload = {
-            action: "save",
-            date: document.getElementById("tDate").value,
+            action: wasEditing ? "update" : "save",
+            date: selectedDate,
             onlineReg: document.getElementById("onR").value,
             offlineReg: document.getElementById("offR").value,
             totalReg: stats.totalReg,
@@ -922,13 +952,9 @@
         } catch (error) {
             console.error("Save Error:", error);
 
-            alert(
-                "The request could not be sent. Please check your internet connection."
-            );
-
+            alert("The request could not be sent. Please check your internet connection.");
             button.disabled = false;
-            button.innerText =
-                wasEditing ? "UPDATE RECORD" : "SAVE DAILY RECORD";
+            button.innerText = wasEditing ? "UPDATE RECORD" : "SAVE DAILY RECORD";
         }
     });
 
@@ -937,9 +963,7 @@
         const toValue = document.getElementById("sE").value;
 
         const filtered = summaryData.filter(record => {
-            const date = getDateOnly(
-                getValue(record, "Date", "date")
-            );
+            const date = getDateOnly(getValue(record, "Date", "date"));
 
             if (!date) return false;
             if (fromValue && date < fromValue) return false;
@@ -960,54 +984,15 @@
 
         document.getElementById("sBody").innerHTML =
             filtered.map(record => {
-                const date = getDateOnly(
-                    getValue(record, "Date", "date")
-                );
+                const date = getDateOnly(getValue(record, "Date", "date"));
 
-                const onlineReg = Number(getValue(
-                    record,
-                    "onlineReg",
-                    "Online Reg",
-                    "online reg"
-                )) || 0;
+                const onlineReg = Number(getValue(record, "onlineReg", "Online Reg", "online reg")) || 0;
+                const offlineReg = Number(getValue(record, "offlineReg", "Offline Reg", "offline reg")) || 0;
+                const totalRegistration = Number(getValue(record, "totalReg", "Total Reg", "total reg")) || 0;
 
-                const offlineReg = Number(getValue(
-                    record,
-                    "offlineReg",
-                    "Offline Reg",
-                    "offline reg"
-                )) || 0;
-
-                const totalRegistration = Number(getValue(
-                    record,
-                    "totalReg",
-                    "Total Reg",
-                    "total reg"
-                )) || 0;
-
-                const onlineAtt = Number(getValue(
-                    record,
-                    "onlineTurnout",
-                    "Online Turnout",
-                    "online turnout",
-                    "Online Attd"
-                )) || 0;
-
-                const offlineAtt = Number(getValue(
-                    record,
-                    "offlineTurnout",
-                    "Offline Turnout",
-                    "offline turnout",
-                    "Offline Attd"
-                )) || 0;
-
-                const totalAttendance = Number(getValue(
-                    record,
-                    "totalTurnout",
-                    "Total Turnout",
-                    "total turnout",
-                    "Total Attd"
-                )) || 0;
+                const onlineAtt = Number(getValue(record, "onlineTurnout", "Online Turnout", "online turnout", "Online Attd")) || 0;
+                const offlineAtt = Number(getValue(record, "offlineTurnout", "Offline Turnout", "offline turnout", "Offline Attd")) || 0;
+                const totalAttendance = Number(getValue(record, "totalTurnout", "Total Turnout", "total turnout", "Total Attd")) || 0;
 
                 const men = Number(getValue(record, "men", "Men")) || 0;
                 const women = Number(getValue(record, "women", "Women")) || 0;
@@ -1025,7 +1010,7 @@
 
                 return `
                     <tr>
-                        <td>${escapeHtml(date)}</td>
+                        <td>${displayDate(date)}</td>
                         <td>${onlineReg}</td>
                         <td>${offlineReg}</td>
                         <td>${totalRegistration}</td>
@@ -1072,9 +1057,7 @@
         const toValue = document.getElementById("aE").value;
 
         const filtered = absenteeData.filter(record => {
-            const date = getDateOnly(
-                getValue(record, "Date", "date")
-            );
+            const date = getDateOnly(getValue(record, "Date", "date"));
 
             if (!date) return false;
             if (fromValue && date < fromValue) return false;
@@ -1085,23 +1068,14 @@
 
         document.getElementById("aBody").innerHTML =
             filtered.map(record => {
-                const date = getDateOnly(
-                    getValue(record, "Date", "date")
-                );
-
+                const date = getDateOnly(getValue(record, "Date", "date"));
                 const name = getValue(record, "Name", "name");
-                const ticket = getValue(
-                    record,
-                    "Ticket No",
-                    "ticket no",
-                    "ticket",
-                    "Ticket"
-                );
+                const ticket = getValue(record, "Ticket No", "ticket no", "ticket", "Ticket");
                 const type = getValue(record, "Type", "type");
 
                 return `
                     <tr>
-                        <td>${escapeHtml(date)}</td>
+                        <td>${displayDate(date)}</td>
                         <td>${escapeHtml(name)}</td>
                         <td>${escapeHtml(ticket)}</td>
                         <td>${escapeHtml(type)}</td>
